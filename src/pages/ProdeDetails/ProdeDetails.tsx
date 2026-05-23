@@ -1,31 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import type { PredictionChoice } from "../../types/index";
+import type { PredictionChoice, RankingUser } from "../../types/types";
 import ProdeHeader from "../../components/ProdeHeader/ProdeHeader";
 import ProdeStages from "../../components/ProdeStages/ProdeStages";
-
-const rankingMock = [
-  {
-    id: "1",
-    username: "JUANPEREZ_10",
-    totalPoints: 290,
-    correctPredictions: 25,
-  },
-  {
-    id: "2",
-    username: "JUANPEREZ_9",
-    totalPoints: 160,
-    correctPredictions: 23,
-  },
-  {
-    id: "3",
-    username: "RODO GIET_5",
-    totalPoints: 150,
-    correctPredictions: 16,
-  },
-  { id: "4", username: "GUANPREZ_3", totalPoints: 10, correctPredictions: 11 },
-  { id: "5", username: "JUANPEREZ_1", totalPoints: 10, correctPredictions: 10 },
-];
+import { getUserDetails } from "../../services/userService";
 
 const ProdeDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -33,8 +11,24 @@ const ProdeDetails = () => {
     Record<string, PredictionChoice>
   >({});
 
-  const playerIndex = rankingMock.findIndex((user) => user.id === id);
-  const currentPlayer = playerIndex !== -1 ? rankingMock[playerIndex] : null;
+  const [playerData, setPlayerData] = useState<{
+    user: RankingUser;
+    position: number;
+  } | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (!id) return;
+
+      setLoading(true);
+      const data = await getUserDetails(id);
+      setPlayerData(data);
+      setLoading(false);
+    };
+
+    fetchUserData();
+  }, [id]);
 
   const handlePredict = (matchId: string, choice: PredictionChoice) => {
     setPredictions((prev) => ({
@@ -43,7 +37,15 @@ const ProdeDetails = () => {
     }));
   };
 
-  if (!currentPlayer) {
+  if (loading) {
+    return (
+      <main className="max-w-4xl mx-auto px-4 py-16 text-center font-mono uppercase font-black text-secondary">
+        Cargando Jugador...
+      </main>
+    );
+  }
+
+  if (!playerData) {
     return (
       <main className="max-w-4xl mx-auto px-4 py-16 text-center font-mono">
         <h1 className="text-3xl font-black text-[#e63946] uppercase mb-4">
@@ -54,7 +56,7 @@ const ProdeDetails = () => {
         </p>
         <Link
           to="/"
-          className="inline-block border-4 border-border-retro bg-bg-card px-6 py-3 font-black uppercase text-sm shadow-[4px_4px_0px_0px_var(--color-border-retro)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_var(--color-border-retro)]"
+          className="inline-block border-4 border-border-retro bg-bg-card px-6 py-3 font-black uppercase text-sm shadow-[4px_4px_0px_0px_var(--color-border-retro)] active:translate-x-[2px] active:translate-y-[2px]"
         >
           VOLVER AL RANKING
         </Link>
@@ -64,8 +66,7 @@ const ProdeDetails = () => {
 
   return (
     <main className="max-w-4xl mx-auto px-4 py-12 font-mono select-none">
-      <ProdeHeader user={currentPlayer} position={playerIndex + 1} />
-
+      <ProdeHeader user={playerData.user} position={playerData.position} />
       <ProdeStages predictions={predictions} onPredict={handlePredict} />
     </main>
   );

@@ -44,7 +44,7 @@ const Navbar = () => {
               </button>
             )}
 
-            {/* Modo claro/oscuro (Al final a la derecha) */}
+            {/* Modo claro/oscuro */}
             <button
               onClick={toggleTheme}
               className="p-2 rounded-lg border transition-all active:scale-95 border-slate-200 bg-slate-50 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700"

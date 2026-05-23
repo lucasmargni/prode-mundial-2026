@@ -1,4 +1,4 @@
-import type { TournamentStage, StageStatus } from "../../types/index";
+import type { TournamentStage, StageStatus } from "../../types/types";
 
 interface StageButtonProps {
   stage: StageStatus;

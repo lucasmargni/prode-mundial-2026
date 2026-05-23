@@ -1,4 +1,4 @@
-import type { Team } from "../../types/index";
+import type { Team } from "../../types/types";
 
 interface CountryMatchCardProps {
   team: Team;

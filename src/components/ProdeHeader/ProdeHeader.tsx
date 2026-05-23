@@ -1,4 +1,4 @@
-import type { RankingUser } from "../../types/index";
+import type { RankingUser } from "../../types/types";
 
 interface ProdeHeaderProps {
   user: RankingUser;

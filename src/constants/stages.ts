@@ -1,4 +1,4 @@
-import type { StageStatus } from "../types/index";
+import type { StageStatus } from "../types/types";
 
 export const STAGES_DATA: StageStatus[] = [
   { id: "GRUPOS", name: "GRUPOS", lockDate: "2026-06-11" },
