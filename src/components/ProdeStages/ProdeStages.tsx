@@ -3,34 +3,10 @@ import type {
   TournamentStage,
   PredictionChoice,
   Match,
-  StageStatus,
 } from "../../types/index";
+import { STAGES_DATA } from "../../constants/stages";
 import MatchCard from "../MatchCard/MatchCard";
-
-const stagesMock: StageStatus[] = [
-  { id: "GRUPOS", name: "GRUPOS", isAvailable: true, lockDate: "2026-06-10" },
-  { id: "16VOS", name: "16VOS", isAvailable: true, lockDate: "2026-06-20" },
-  { id: "8VOS", name: "8VOS", isAvailable: true, lockDate: "2026-06-25" },
-  {
-    id: "CUARTOS",
-    name: "CUARTOS",
-    isAvailable: false,
-    lockDate: "2026-07-02",
-  },
-  {
-    id: "SEMIFINAL",
-    name: "SEMIFINAL",
-    isAvailable: false,
-    lockDate: "2026-07-08",
-  },
-  {
-    id: "TERCER_PUESTO",
-    name: "3ER PUESTO",
-    isAvailable: false,
-    lockDate: "2026-07-11",
-  },
-  { id: "FINAL", name: "FINAL", isAvailable: false, lockDate: "2026-07-12" },
-];
+import StageButton from "../StageButton/StageButton";
 
 const matchesMock: Match[] = [
   {
@@ -76,7 +52,13 @@ interface ProdeStagesProps {
 }
 
 export const ProdeStages = ({ predictions, onPredict }: ProdeStagesProps) => {
-  const [activeStage, setActiveStage] = useState<TournamentStage>("GRUPOS");
+  const todayStr = new Date().toISOString().split("T")[0];
+
+  const [activeStage, setActiveStage] = useState<TournamentStage>(() => {
+    const currentStage = STAGES_DATA.find((s) => s.lockDate >= todayStr);
+
+    return currentStage ? (currentStage.id as TournamentStage) : "FINAL";
+  });
 
   const currentMatches = matchesMock.filter(
     (match) => match.stage === activeStage,
@@ -84,26 +66,16 @@ export const ProdeStages = ({ predictions, onPredict }: ProdeStagesProps) => {
 
   return (
     <>
-      <nav className="flex flex-wrap gap-2 mb-8">
-        {stagesMock.map((stage) => {
-          const isActive = activeStage === stage.id;
-          return (
-            <button
-              key={stage.id}
-              disabled={!stage.isAvailable}
-              onClick={() => setActiveStage(stage.id)}
-              className={`border-4 border-border-retro font-black text-xs px-4 py-2 uppercase transition-all duration-150 cursor-pointer disabled:cursor-not-allowed ${
-                !stage.isAvailable
-                  ? "opacity-40 bg-slate-200 dark:bg-slate-800 text-slate-400"
-                  : isActive
-                    ? "bg-primary text-white shadow-[inset_4px_4px_0px_0px_rgba(0,0,0,0.2)] translate-x-[2px] translate-y-[2px]"
-                    : "bg-bg-card shadow-[4px_4px_0px_0px_var(--color-border-retro)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_var(--color-border-retro)]"
-              }`}
-            >
-              {stage.name}
-            </button>
-          );
-        })}
+      <nav className="flex flex-wrap justify-center gap-2 mb-8">
+        {STAGES_DATA.map((stage) => (
+          <StageButton
+            key={stage.id}
+            stage={stage}
+            isActive={activeStage === stage.id}
+            todayStr={todayStr}
+            onClick={setActiveStage}
+          />
+        ))}
       </nav>
 
       <section className="space-y-6">

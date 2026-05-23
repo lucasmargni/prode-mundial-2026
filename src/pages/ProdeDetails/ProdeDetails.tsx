@@ -33,7 +33,8 @@ const ProdeDetails = () => {
     Record<string, PredictionChoice>
   >({});
 
-  const currentPlayer = rankingMock.find((user) => user.id === id);
+  const playerIndex = rankingMock.findIndex((user) => user.id === id);
+  const currentPlayer = playerIndex !== -1 ? rankingMock[playerIndex] : null;
 
   const handlePredict = (matchId: string, choice: PredictionChoice) => {
     setPredictions((prev) => ({
@@ -63,7 +64,7 @@ const ProdeDetails = () => {
 
   return (
     <main className="max-w-4xl mx-auto px-4 py-12 font-mono select-none">
-      <ProdeHeader user={currentPlayer} />
+      <ProdeHeader user={currentPlayer} position={playerIndex + 1} />
 
       <ProdeStages predictions={predictions} onPredict={handlePredict} />
     </main>

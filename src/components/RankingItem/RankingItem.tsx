@@ -1,5 +1,6 @@
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import type { RankingUser } from "../../types/index";
+
 import medallaOro from "../../assets/medalla-oro.png";
 import medallaPlata from "../../assets/medalla-plata.png";
 import medallaBronce from "../../assets/medalla-bronce.png";
@@ -10,6 +11,7 @@ interface RankingItemProps {
 }
 
 const RankingItem = ({ user, position }: RankingItemProps) => {
+  const navigate = useNavigate(); // 🕹️ Hook para la navegación programática
   const isPodium = position <= 3;
 
   const getPodiumColor = (pos: number) => {
@@ -22,7 +24,11 @@ const RankingItem = ({ user, position }: RankingItemProps) => {
   const nameColorClass = getPodiumColor(position);
 
   return (
-    <tr className="transition-colors hover:bg-primary/10 border-b-4 border-border-retro last:border-b-0">
+    <tr
+      onClick={() => navigate(`/prode/${user.id}`)} // 👈 Redirección en toda la fila
+      className="transition-colors hover:bg-primary/10 border-b-4 border-border-retro last:border-b-0 cursor-pointer select-none"
+    >
+      {/* Columna Puesto / Medalla */}
       <td className="py-2 px-6">
         <div className="flex items-center justify-center h-16">
           {position === 1 && (
@@ -54,21 +60,19 @@ const RankingItem = ({ user, position }: RankingItemProps) => {
         </div>
       </td>
 
+      {/* Columna Nombre de Usuario */}
       <td
         className={`py-2 px-6 text-lg font-black tracking-wide uppercase ${nameColorClass}`}
       >
-        <Link
-          to={`/prode/${user.id}`}
-          className="hover:text-primary transition-colors cursor-pointer block w-full"
-        >
-          {user.username}
-        </Link>
+        <span className="block w-full">{user.username}</span>
       </td>
 
+      {/* Columna Aciertos */}
       <td className="py-2 px-6 text-center text-xl font-black text-[#34d399]">
         {user.correctPredictions.toString().padStart(2, "0")}
       </td>
 
+      {/* Columna Puntos */}
       <td className="py-2 px-6 text-right text-2xl font-black text-[#34d399]">
         {user.totalPoints.toString().padStart(2, "0")}
       </td>

@@ -41,7 +41,6 @@ export interface UserPrediction {
 export interface StageStatus {
   id: TournamentStage;
   name: string;
-  isAvailable: boolean;
   lockDate: string; /* Primer partido de la etapa que determina el límite para votar */
 }
 
