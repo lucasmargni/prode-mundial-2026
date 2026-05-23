@@ -9,7 +9,6 @@ interface PredictionButtonProps {
 }
 
 export const PredictionButton = ({
-  choice,
   label,
   isSelected,
   isLocked,
