@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import type { RankingUser } from "../../types/index";
 import medallaOro from "../../assets/medalla-oro.png";
 import medallaPlata from "../../assets/medalla-plata.png";
@@ -56,7 +57,12 @@ const RankingItem = ({ user, position }: RankingItemProps) => {
       <td
         className={`py-2 px-6 text-lg font-black tracking-wide uppercase ${nameColorClass}`}
       >
-        {user.username}
+        <Link
+          to={`/prode/${user.id}`}
+          className="hover:text-primary transition-colors cursor-pointer block w-full"
+        >
+          {user.username}
+        </Link>
       </td>
 
       <td className="py-2 px-6 text-center text-xl font-black text-[#34d399]">
