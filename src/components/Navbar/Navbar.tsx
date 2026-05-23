@@ -4,8 +4,7 @@ import { useTheme } from "../../contexts/ThemeContext";
 const Navbar = () => {
   const { theme, toggleTheme } = useTheme();
 
-  // Simulación de estado de usuario
-  const isLoggedIn = false;
+  const isLoggedIn = true;
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b backdrop-blur-md transition-colors duration-300 bg-white/90 border-slate-200 text-text-main dark:bg-slate-900/90 dark:border-slate-800">
@@ -18,32 +17,16 @@ const Navbar = () => {
             </span>
           </Link>
 
-          <div className="hidden md:flex items-center space-x-8 font-medium">
-            <Link
-              to="/mi-prode"
-              className="text-secondary transition-colors hover:text-primary"
-            >
-              Mi Prode
-            </Link>
-            <Link
-              to="/reglas"
-              className="text-secondary transition-colors hover:text-primary"
-            >
-              Reglas
-            </Link>
-          </div>
-
-          {/* Modo claro/oscuro */}
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-lg border transition-all active:scale-95 border-slate-200 bg-slate-50 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700"
-              title={
-                theme === "light" ? "Activar modo oscuro" : "Activar modo claro"
-              }
-            >
-              {theme === "light" ? "☀️" : "🌙"}
-            </button>
+          <div className="flex items-center space-x-6">
+            {/* Mi Prode: Solo visible si está logueado */}
+            {isLoggedIn && (
+              <Link
+                to="/mi-prode"
+                className="text-sm font-medium text-secondary transition-colors hover:text-primary"
+              >
+                Mi Prode
+              </Link>
+            )}
 
             {/* Autenticación */}
             {isLoggedIn ? (
@@ -56,10 +39,21 @@ const Navbar = () => {
                 </span>
               </div>
             ) : (
-              <button className="py-2 px-4 rounded-lg font-semibold text-white shadow-md shadow-emerald-500/10 transition-all active:scale-95 bg-primary hover:opacity-90">
+              <button className="py-2 px-4 text-sm font-semibold text-white shadow-md shadow-emerald-500/10 transition-all active:scale-95 bg-primary hover:opacity-90">
                 Ingresar
               </button>
             )}
+
+            {/* Modo claro/oscuro (Al final a la derecha) */}
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-lg border transition-all active:scale-95 border-slate-200 bg-slate-50 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700"
+              title={
+                theme === "light" ? "Activar modo oscuro" : "Activar modo claro"
+              }
+            >
+              {theme === "light" ? "☀️" : "🌙"}
+            </button>
           </div>
         </div>
       </div>
