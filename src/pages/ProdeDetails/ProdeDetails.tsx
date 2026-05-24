@@ -1,46 +1,95 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import type { PredictionChoice, RankingUser } from "../../types/types";
+import type { PredictionChoice, RankingUser, Match } from "../../types/types";
 import ProdeHeader from "../../components/ProdeHeader/ProdeHeader";
 import ProdeStages from "../../components/ProdeStages/ProdeStages";
 import { getUserDetails } from "../../services/userService";
+import { getAllMatches } from "../../services/matchService";
+import {
+  getUserPredictions,
+  saveUserPredictions,
+} from "../../services/predictionService";
+import { useAuth } from "../../contexts/AuthContext";
 
 const ProdeDetails = () => {
   const { id } = useParams<{ id: string }>();
+  const { user: currentUser } = useAuth();
+
+  const [matches, setMatches] = useState<Match[]>([]);
   const [predictions, setPredictions] = useState<
     Record<string, PredictionChoice>
   >({});
-
   const [playerData, setPlayerData] = useState<{
     user: RankingUser;
     position: number;
   } | null>(null);
+
   const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState<{
+    text: string;
+    isError: boolean;
+  } | null>(null);
+
+  const isOwnProde = currentUser?.id === id;
 
   useEffect(() => {
-    const fetchUserData = async () => {
+    const fetchAllData = async () => {
       if (!id) return;
 
       setLoading(true);
-      const data = await getUserDetails(id);
-      setPlayerData(data);
+
+      const [detailsData, savedPredictions, dbMatches] = await Promise.all([
+        getUserDetails(id),
+        getUserPredictions(id),
+        getAllMatches(),
+      ]);
+
+      setPlayerData(detailsData);
+      setPredictions(savedPredictions);
+      setMatches(dbMatches);
       setLoading(false);
     };
 
-    fetchUserData();
+    fetchAllData();
   }, [id]);
 
   const handlePredict = (matchId: string, choice: PredictionChoice) => {
+    if (!isOwnProde) return;
+
     setPredictions((prev) => ({
       ...prev,
       [matchId]: prev[matchId] === choice ? prev[matchId] : choice,
     }));
   };
 
+  const handleSaveClick = async () => {
+    if (!id || !isOwnProde) return;
+
+    setIsSaving(true);
+    setSaveMessage(null);
+
+    const success = await saveUserPredictions(id, predictions);
+
+    if (success) {
+      setSaveMessage({
+        text: "PREDICCIONES GUARDADAS CON ÉXITO!",
+        isError: false,
+      });
+      setTimeout(() => setSaveMessage(null), 3000);
+    } else {
+      setSaveMessage({
+        text: "ERROR AL GUARDAR. INTENTE NUEVAMENTE",
+        isError: true,
+      });
+    }
+    setIsSaving(false);
+  };
+
   if (loading) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-16 text-center font-mono uppercase font-black text-secondary w-full">
-        Cargando Jugador...
+        Cargando Jugador y Fixture...
       </div>
     );
   }
@@ -67,7 +116,34 @@ const ProdeDetails = () => {
   return (
     <div className="max-w-4xl mx-auto px-4 py-12 font-mono select-none w-full overflow-hidden">
       <ProdeHeader user={playerData.user} position={playerData.position} />
-      <ProdeStages predictions={predictions} onPredict={handlePredict} />
+
+      <ProdeStages
+        matches={matches}
+        predictions={predictions}
+        onPredict={handlePredict}
+      />
+
+      {isOwnProde && (
+        <div className="mt-12 flex flex-col items-center space-y-4 border-t-4 border-dashed border-border-retro/40 pt-8">
+          <button
+            onClick={handleSaveClick}
+            disabled={isSaving}
+            className="w-full sm:w-auto min-w-[280px] border-4 border-border-retro bg-primary text-white px-8 py-4 font-black uppercase tracking-wider text-lg shadow-[6px_6px_0px_0px_var(--color-border-retro)] transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90 active:translate-x-1 active:translate-y-1 active:shadow-[2px_2px_0px_0px_var(--color-border-retro)] cursor-pointer"
+          >
+            {isSaving ? "GUARDANDO JUGADAS..." : "GUARDAR PREDICCIONES"}
+          </button>
+
+          {saveMessage && (
+            <p
+              className={`text-sm font-black uppercase tracking-widest animate-pulse ${
+                saveMessage.isError ? "text-[#e63946]" : "text-emerald-500"
+              }`}
+            >
+              {saveMessage.text}
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 };

@@ -1,20 +1,25 @@
-import { useState, useEffect } from "react";
+/* src/components/ProdeStages/ProdeStages.tsx */
+import { useState } from "react";
 import type {
   TournamentStage,
   PredictionChoice,
   Match,
 } from "../../types/types";
 import { STAGES_DATA } from "../../constants/stages";
-import { getMatchesByStage } from "../../services/matchService";
 import MatchCard from "../MatchCard/MatchCard";
 import StageButton from "../StageButton/StageButton";
 
 interface ProdeStagesProps {
+  matches: Match[];
   predictions: Record<string, PredictionChoice>;
   onPredict: (matchId: string, choice: PredictionChoice) => void;
 }
 
-export const ProdeStages = ({ predictions, onPredict }: ProdeStagesProps) => {
+export const ProdeStages = ({
+  matches,
+  predictions,
+  onPredict,
+}: ProdeStagesProps) => {
   const todayStr = new Date().toISOString().split("T")[0];
 
   const [activeStage, setActiveStage] = useState<TournamentStage>(() => {
@@ -22,25 +27,14 @@ export const ProdeStages = ({ predictions, onPredict }: ProdeStagesProps) => {
     return currentStage ? (currentStage.id as TournamentStage) : "FINAL";
   });
 
-  const [currentMatches, setCurrentMatches] = useState<Match[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  // 🧠 Buscamos la fecha de la etapa actual para saber si ya expiró
   const currentStageData = STAGES_DATA.find((s) => s.id === activeStage);
   const isStageExpired = currentStageData
     ? todayStr >= currentStageData.lockDate
     : false;
 
-  useEffect(() => {
-    const fetchMatches = async () => {
-      setLoading(true);
-      const matches = await getMatchesByStage(activeStage);
-      setCurrentMatches(matches);
-      setLoading(false);
-    };
-
-    fetchMatches();
-  }, [activeStage]);
+  const filteredMatches = matches.filter(
+    (match) => match.stage === activeStage,
+  );
 
   return (
     <>
@@ -57,18 +51,14 @@ export const ProdeStages = ({ predictions, onPredict }: ProdeStagesProps) => {
       </nav>
 
       <section className="space-y-6">
-        {loading ? (
-          <div className="text-center p-8 font-black text-secondary uppercase animate-pulse">
-            Cargando Partidos...
-          </div>
-        ) : currentMatches.length === 0 ? (
+        {filteredMatches.length === 0 ? (
           <div className="text-center p-8 border-4 border-dashed border-border-retro/30 bg-bg-card/50">
             <p className="font-black text-secondary uppercase">
               NO HAY PARTIDOS CARGADOS PARA ESTA ETAPA
             </p>
           </div>
         ) : (
-          currentMatches.map((match) => (
+          filteredMatches.map((match) => (
             <MatchCard
               key={match.id}
               match={match}

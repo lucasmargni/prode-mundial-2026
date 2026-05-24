@@ -31,7 +31,7 @@ export const getRanking = async (
       return cachedData;
     }
 
-    // Si expiro o se forzó la búsqueda, consultar datos en la api saltando caché de red
+    // Si expiro o se forzo la busqueda, consultar datos en la api saltando cache de red
     const cacheBuster = options?.force ? `?t=${now}` : "";
     const response = await fetch(`/api/users${cacheBuster}`, {
       method: "GET",
@@ -80,15 +80,14 @@ export const getUserDetails = async (
   const now = Date.now();
 
   try {
-    const cachedUser = await localforage.getItem<RankingUser>(USER_KEY);
+    const cachedData = await localforage.getItem<{
+      user: RankingUser;
+      position: number;
+    }>(USER_KEY);
     const cachedTime = await localforage.getItem<number>(USER_TIME_KEY);
 
-    // Si el cache existe y es nuevo, devolver datos en cache
-    if (cachedUser && cachedTime && now - cachedTime < CACHE_DURATION_MS) {
-      return {
-        user: cachedUser,
-        position: 1, // TODO: Actualizar y poner posicion real
-      };
+    if (cachedData && cachedTime && now - cachedTime < CACHE_DURATION_MS) {
+      return cachedData;
     }
 
     // Si expiro, consultar datos en la api
@@ -110,17 +109,21 @@ export const getUserDetails = async (
       correctPredictions: dbUser.correctPredictions,
     };
 
-    await localforage.setItem(USER_KEY, user);
+    const position = dbUser.rankingPosition ?? 0;
+
+    const result = { user, position };
+
+    // Guardamos el objeto completo devuelto en la caché
+    await localforage.setItem(USER_KEY, result);
     await localforage.setItem(USER_TIME_KEY, now);
 
-    return {
-      user,
-      position: 1, // TODO: Actualizar y poner posicion real
-    };
+    return result;
   } catch (error) {
     console.error("Error en getUserDetails:", error);
-    // Contingencia: si cae la red, devolvemos lo ultimo que quedo en cache
-    const backupUser = await localforage.getItem<RankingUser>(USER_KEY);
-    return backupUser ? { user: backupUser, position: 1 } : null;
+    const backupData = await localforage.getItem<{
+      user: RankingUser;
+      position: number;
+    }>(USER_KEY);
+    return backupData || null;
   }
 };

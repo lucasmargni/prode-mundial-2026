@@ -14,4 +14,35 @@ model User {
   correctPredictions Int      @default(0)
   rankingPosition    Int      @default(0)
   createdAt          DateTime @default(now())
+
+  // un usuario puede tener muchas predicciones guardadas
+  predictions        Prediction[]
+}
+
+model Match {
+  id             String       @id @default(uuid())
+  stage          String
+  localTeamCode  String
+  awayTeamCode   String
+  date           DateTime
+  isFinished     Boolean      @default(false)
+  realResult     String?
+
+  // un partido puede estar en muchas predicciones de distintos usuarios
+  predictions    Prediction[]
+}
+
+model Prediction {
+  id        String   @id @default(uuid())
+  userId    String
+  matchId   String
+  choice    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  match     Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  // garantiza que un usuario tenga solo una prediccion por partido
+  @@unique([userId, matchId])
 }

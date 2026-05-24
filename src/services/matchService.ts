@@ -1,51 +1,111 @@
+import localforage from "localforage";
 import type { Match, TournamentStage } from "../types/types";
+import { inflateTeam } from "../utils/teams.js";
 
-const matchesMock: Match[] = [
-  {
-    id: "m1",
-    stage: "GRUPOS",
-    localTeam: { id: "t1", name: "ARGENTINA", code: "ARG", flagUrl: "🇦🇷" },
-    awayTeam: { id: "t2", name: "FRANCIA", code: "FRA", flagUrl: "🇫🇷" },
-    date: "24 MAY - 16:00 HS",
-    isFinished: true,
-    realGoalsLocal: 3,
-    realGoalsAway: 2,
-    realResult: "L",
-  },
-  {
-    id: "m2",
-    stage: "GRUPOS",
-    localTeam: { id: "t3", name: "URUGUAY", code: "URU", flagUrl: "🇺🇾" },
-    awayTeam: { id: "t4", name: "PORTUGAL", code: "POR", flagUrl: "🇵🇹" },
-    date: "25 MAY - 13:00 HS",
-    isFinished: false,
-  },
-  {
-    id: "m3",
-    stage: "16VOS",
-    localTeam: { id: "t5", name: "ESPAÑA", code: "ESP", flagUrl: "🇪🇸" },
-    awayTeam: { id: "t6", name: "JAPÓN", code: "JPN", flagUrl: "🇯🇵" },
-    date: "18 JUN - 15:00 HS",
-    isFinished: false,
-  },
-  {
-    id: "m4",
-    stage: "8VOS",
-    localTeam: { id: "t1", name: "ARGENTINA", code: "ARG", flagUrl: "🇦🇷" },
-    awayTeam: { id: "t7", name: "ITALIA", code: "ITA", flagUrl: "🇮🇹" },
-    date: "29 JUN - 20:00 HS",
-    isFinished: false,
-  },
-];
+const CACHE_DURATION_MS = 3 * 60 * 1000;
 
-// Obtener todos los partidos de una etapa específica
+const formatRetroDate = (dateString: string): string => {
+  const d = new Date(dateString);
+  const months = [
+    "ENE",
+    "FEB",
+    "MAR",
+    "ABR",
+    "MAY",
+    "JUN",
+    "JUL",
+    "AGO",
+    "SEP",
+    "OCT",
+    "NOV",
+    "DIC",
+  ];
+  return `${d.getDate()} ${months[d.getMonth()]} - ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")} HS`;
+};
+
+const mapDBMatches = (matchesFromDB: any[]): Match[] => {
+  return matchesFromDB.map((m: any) => ({
+    id: m.id,
+    stage: m.stage as TournamentStage,
+    localTeam: inflateTeam(m.localTeamCode),
+    awayTeam: inflateTeam(m.awayTeamCode),
+    date: formatRetroDate(m.date),
+    isFinished: m.isFinished,
+    realGoalsLocal: m.realGoalsLocal ?? undefined,
+    realGoalsAway: m.realGoalsAway ?? undefined,
+    realResult: m.realResult ?? undefined,
+  }));
+};
+
+/* Obtener todos los partidos */
+export const getAllMatches = async (): Promise<Match[]> => {
+  const now = Date.now();
+  const CACHE_KEY = "matches_data_all";
+  const TIME_KEY = "matches_cache_time_all";
+
+  try {
+    const cachedData = await localforage.getItem<Match[]>(CACHE_KEY);
+    const cachedTime = await localforage.getItem<number>(TIME_KEY);
+
+    if (cachedData && cachedTime && now - cachedTime < CACHE_DURATION_MS) {
+      return cachedData;
+    }
+
+    const response = await fetch("/api/matches", {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    if (!response.ok) throw new Error("Error al obtener todos los partidos");
+
+    const json = await response.json();
+    const mappedMatches = mapDBMatches(json.data || []);
+
+    await localforage.setItem(CACHE_KEY, mappedMatches);
+    await localforage.setItem(TIME_KEY, now);
+
+    return mappedMatches;
+  } catch (error) {
+    console.error("Error en getAllMatches:", error);
+    const backup = await localforage.getItem<Match[]>(CACHE_KEY);
+    return backup || [];
+  }
+};
+
+/* Obtener partidos filtrados por Etapa */
 export const getMatchesByStage = async (
   stage: TournamentStage,
 ): Promise<Match[]> => {
-  return matchesMock.filter((match) => match.stage === stage);
-};
+  const now = Date.now();
+  const CACHE_KEY = `matches_data_${stage}`;
+  const TIME_KEY = `matches_cache_time_${stage}`;
 
-// Obtener la totalidad de los partidos cargados
-export const getAllMatches = async (): Promise<Match[]> => {
-  return matchesMock;
+  try {
+    const cachedData = await localforage.getItem<Match[]>(CACHE_KEY);
+    const cachedTime = await localforage.getItem<number>(TIME_KEY);
+
+    if (cachedData && cachedTime && now - cachedTime < CACHE_DURATION_MS) {
+      return cachedData;
+    }
+
+    const response = await fetch(`/api/matches?stage=${stage}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    if (!response.ok)
+      throw new Error(`Error al obtener los partidos de la etapa ${stage}`);
+
+    const json = await response.json();
+    const mappedMatches = mapDBMatches(json.data || []);
+
+    await localforage.setItem(CACHE_KEY, mappedMatches);
+    await localforage.setItem(TIME_KEY, now);
+
+    return mappedMatches;
+  } catch (error) {
+    console.error(`Error en getMatchesByStage (${stage}):`, error);
+    const backup = await localforage.getItem<Match[]>(CACHE_KEY);
+    return backup || [];
+  }
 };
