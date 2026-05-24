@@ -1,4 +1,3 @@
-// api/test.ts
 import type { IncomingMessage, ServerResponse } from "http";
 import { prisma } from "../src/lib/prisma.js";
 
