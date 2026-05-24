@@ -3,7 +3,7 @@ import type { Team } from "../types/types";
 export const teamDictionary: Record<string, { name: string; flagUrl: string }> =
   {
     MEX: { name: "MÉXICO", flagUrl: "🇲🇽" },
-    RSA: { name: "SUDÁFRICA", flagUrl: "🇿🇦" },
+    ZAF: { name: "SUDÁFRICA", flagUrl: "🇿🇦" },
     KOR: { name: "COREA DEL SUR", flagUrl: "🇰🇷" },
     CZE: { name: "REPÚBLICA CHECA", flagUrl: "🇨🇿" },
 

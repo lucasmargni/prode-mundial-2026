@@ -20,7 +20,15 @@ const formatRetroDate = (dateString: string): string => {
     "NOV",
     "DIC",
   ];
-  return `${d.getDate()} ${months[d.getMonth()]} - ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")} HS`;
+
+  const day = d.getUTCDate();
+  const month = months[d.getUTCMonth()];
+  const year = d.getUTCFullYear();
+  const hours = String(d.getUTCHours()).padStart(2, "0");
+  const minutes = String(d.getUTCMinutes()).padStart(2, "0");
+
+  // Armamos la cadena con tu estructura exacta: 11 JUN 2026 - 16:00 HS
+  return `${day} ${month} ${year} - ${hours}:${minutes} hs`;
 };
 
 const mapDBMatches = (matchesFromDB: any[]): Match[] => {
