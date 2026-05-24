@@ -5,8 +5,14 @@ import type { RankingUser } from "../types/types";
 const CACHE_DURATION_MS = 3 * 60 * 1000;
 const MULTIPLICATIVE_POINTS = 3;
 
+interface GetRankingOptions {
+  force?: boolean;
+}
+
 /* Obtener el ranking completo */
-export const getRanking = async (): Promise<RankingUser[]> => {
+export const getRanking = async (
+  options?: GetRankingOptions,
+): Promise<RankingUser[]> => {
   const RANKING_KEY = "ranking_data";
   const RANKING_TIME_KEY = "ranking_cache_time";
   const now = Date.now();
@@ -15,13 +21,28 @@ export const getRanking = async (): Promise<RankingUser[]> => {
     const cachedData = await localforage.getItem<RankingUser[]>(RANKING_KEY);
     const cachedTime = await localforage.getItem<number>(RANKING_TIME_KEY);
 
-    // Si el cache existe y es nuevo, devolver datos en cache
-    if (cachedData && cachedTime && now - cachedTime < CACHE_DURATION_MS) {
+    // Si el cache existe y es nuevo, devolver datos en cache (Siempre y cuando NO se fuerce la búsqueda)
+    if (
+      !options?.force &&
+      cachedData &&
+      cachedTime &&
+      now - cachedTime < CACHE_DURATION_MS
+    ) {
       return cachedData;
     }
 
-    // Si expiro, consultar datos en la api
-    const response = await fetch("/api/users");
+    // Si expiro o se forzó la búsqueda, consultar datos en la api saltando caché de red
+    const cacheBuster = options?.force ? `?t=${now}` : "";
+    const response = await fetch(`/api/users${cacheBuster}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        Pragma: "no-cache",
+        Expires: "0",
+      },
+    });
+
     if (!response.ok) throw new Error("Error al obtener el ranking");
 
     const json = await response.json();

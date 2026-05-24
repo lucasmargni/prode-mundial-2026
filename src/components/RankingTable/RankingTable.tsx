@@ -12,7 +12,8 @@ const RankingTable = () => {
   useEffect(() => {
     const fetchRanking = async () => {
       try {
-        const data = await getRanking();
+        setLoading(true);
+        const data = await getRanking({ force: true });
         setRanking(data);
       } catch (error) {
         console.error("Error al cargar el ranking en la UI:", error);
