@@ -1,6 +1,6 @@
 // api/test.ts
 import type { IncomingMessage, ServerResponse } from "http";
-import { prisma } from "../src/lib/prisma";
+import { prisma } from "../src/lib/prisma.js";
 
 export default async function handler(
   req: IncomingMessage,
