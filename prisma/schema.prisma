@@ -10,6 +10,8 @@ generator client {
 model User {
   id                 String   @id @default(uuid())
   username           String   @unique
+  password           String
   correctPredictions Int      @default(0)
+  rankingPosition    Int      @default(0)
   createdAt          DateTime @default(now())
 }
