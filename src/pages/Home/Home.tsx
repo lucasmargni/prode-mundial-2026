@@ -1,6 +1,19 @@
+/* src/pages/Home/Home.tsx */
 import RankingTable from "../../components/RankingTable/RankingTable";
+import LoginModal from "../../components/LoginModal/LoginModal";
+import { useAuth } from "../../contexts/AuthContext";
 
 const Home = () => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-gray-900 text-white">
+        <p className="text-xl font-semibold animate-pulse">Cargando prode...</p>
+      </div>
+    );
+  }
+
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <header className="text-center mb-10">
@@ -15,6 +28,8 @@ const Home = () => {
       <section className="mt-8 max-w-3xl mx-auto">
         <RankingTable />
       </section>
+
+      {!user && <LoginModal />}
     </main>
   );
 };

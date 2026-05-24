@@ -3,16 +3,19 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home/Home";
 import Navbar from "./components/Navbar/Navbar";
 import ProdeDetails from "./pages/ProdeDetails/ProdeDetails";
+import { AuthProvider } from "./contexts/AuthContext";
 
 const App = () => {
   return (
-    <BrowserRouter>
-      <Navbar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/prode/:id" element={<ProdeDetails />} />
-      </Routes>
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/prode/:id" element={<ProdeDetails />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 };
 

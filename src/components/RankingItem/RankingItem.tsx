@@ -8,9 +8,10 @@ import medallaBronce from "../../assets/medalla-bronce.png";
 interface RankingItemProps {
   user: RankingUser;
   position: number;
+  isCurrentUser: boolean;
 }
 
-const RankingItem = ({ user, position }: RankingItemProps) => {
+const RankingItem = ({ user, position, isCurrentUser }: RankingItemProps) => {
   const navigate = useNavigate();
   const isPodium = position <= 3;
 
@@ -26,7 +27,11 @@ const RankingItem = ({ user, position }: RankingItemProps) => {
   return (
     <tr
       onClick={() => navigate(`/prode/${user.id}`)}
-      className="transition-colors hover:bg-primary/10 border-b-4 border-border-retro last:border-b-0 cursor-pointer select-none"
+      className={`transition-colors border-b-4 border-border-retro last:border-b-0 cursor-pointer select-none ${
+        isCurrentUser
+          ? "bg-[#34d399]/20 hover:bg-[#34d399]/30"
+          : "hover:bg-primary/10"
+      }`}
     >
       <td className="py-2 px-6">
         <div className="flex items-center justify-center h-16">
@@ -62,7 +67,14 @@ const RankingItem = ({ user, position }: RankingItemProps) => {
       <td
         className={`py-2 px-6 text-lg font-black tracking-wide uppercase ${nameColorClass}`}
       >
-        <span className="block w-full">{user.username}</span>
+        <span className="block w-full">
+          {user.username}{" "}
+          {isCurrentUser && (
+            <span className="text-sm text-[#34d399] font-normal lowercase">
+              (tú)
+            </span>
+          )}
+        </span>
       </td>
 
       <td className="py-2 px-6 text-center text-xl font-black text-[#34d399]">

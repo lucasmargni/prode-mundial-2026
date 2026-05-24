@@ -2,13 +2,13 @@ import { useEffect, useState } from "react";
 import type { RankingUser } from "../../types/types";
 import RankingItem from "../RankingItem/RankingItem";
 import { getRanking } from "../../services/userService";
+import { useAuth } from "../../contexts/AuthContext";
 
 const RankingTable = () => {
-  // 1. Inicializamos el estado con un array vacío
+  const { user: currentUser } = useAuth();
   const [ranking, setRanking] = useState<RankingUser[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
-  // 2. Cargamos los datos reales al montar el componente
   useEffect(() => {
     const fetchRanking = async () => {
       try {
@@ -22,7 +22,7 @@ const RankingTable = () => {
     };
 
     fetchRanking();
-  }, []);
+  }, [currentUser]);
 
   return (
     <div className="w-full overflow-hidden border-4 border-border-retro bg-bg-card shadow-[4px_4px_0px_0px_var(--color-border-retro)]">
@@ -42,7 +42,6 @@ const RankingTable = () => {
           </thead>
 
           <tbody className="divide-y-4 divide-border-retro font-bold text-base bg-[linear-gradient(to_right,rgba(0,0,0,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.03)_1px,transparent_1px)] bg-[size:16px_16px] dark:bg-[linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)]">
-            {/* 3. Renderizado condicional por si está cargando */}
             {loading ? (
               <tr>
                 <td
@@ -59,11 +58,15 @@ const RankingTable = () => {
                 </td>
               </tr>
             ) : (
-              // 4. Mapeamos el estado dinámico "ranking" en vez del mock
               ranking.map((user, index) => {
                 const position = index + 1;
                 return (
-                  <RankingItem key={user.id} user={user} position={position} />
+                  <RankingItem
+                    key={user.id}
+                    user={user}
+                    position={position}
+                    isCurrentUser={currentUser?.id === user.id}
+                  />
                 );
               })
             )}
