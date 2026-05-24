@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import type { RankingUser } from "../../types/types";
 import RankingItem from "../RankingItem/RankingItem";
 import { getRanking } from "../../services/userService";
@@ -9,11 +9,16 @@ const RankingTable = () => {
   const [ranking, setRanking] = useState<RankingUser[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
+  const previousUserIdRef = useRef<string | undefined>(currentUser?.id);
+
   useEffect(() => {
     const fetchRanking = async () => {
       try {
         setLoading(true);
-        const data = await getRanking({ force: true });
+
+        const isLoggingIn = !previousUserIdRef.current && currentUser?.id;
+
+        const data = await getRanking({ force: !!isLoggingIn });
         setRanking(data);
       } catch (error) {
         console.error("Error al cargar el ranking en la UI:", error);
@@ -23,6 +28,8 @@ const RankingTable = () => {
     };
 
     fetchRanking();
+
+    previousUserIdRef.current = currentUser?.id;
   }, [currentUser]);
 
   return (

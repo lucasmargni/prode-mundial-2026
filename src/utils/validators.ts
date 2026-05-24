@@ -15,6 +15,13 @@ export const validateUsername = (username: string): ValidationResult => {
     return { isValid: false, message: "El usuario no puede estar vacío" };
   }
 
+  if (username.length < 4) {
+    return {
+      isValid: false,
+      message: "El usuario debe tener al menos 4 caracteres",
+    };
+  }
+
   if (!STARTS_WITH_LETTER_REGEX.test(username)) {
     return { isValid: false, message: "El usuario debe empezar con una letra" };
   }
@@ -27,10 +34,7 @@ export const validateUsername = (username: string): ValidationResult => {
 };
 
 /* Valida que la contraseña tenga el formato permitido y al menos 4 caracteres */
-export const validatePassword = (
-  password: string,
-  username?: string,
-): ValidationResult => {
+export const validatePassword = (password: string): ValidationResult => {
   if (!password) {
     return { isValid: false, message: "La contraseña no puede estar vacía" };
   }
@@ -44,13 +48,6 @@ export const validatePassword = (
 
   if (!ALLOWED_CHARS_REGEX.test(password)) {
     return { isValid: false, message: "Caracteres inválidos en la contraseña" };
-  }
-
-  if (username && password.toLowerCase() === username.toLowerCase()) {
-    return {
-      isValid: false,
-      message: "La contraseña no puede ser igual al usuario",
-    };
   }
 
   return { isValid: true, message: "" };

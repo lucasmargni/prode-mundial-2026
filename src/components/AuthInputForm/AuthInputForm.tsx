@@ -1,4 +1,3 @@
-/* src/components/LoginModal/AuthInputForm.tsx */
 import { useState } from "react";
 
 interface AuthInputFormProps {

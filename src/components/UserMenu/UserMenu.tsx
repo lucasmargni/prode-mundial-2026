@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 
 const UserMenu = () => {
   const { user, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -34,6 +36,7 @@ const UserMenu = () => {
   const handleLogoutClick = async () => {
     setIsMenuOpen(false);
     await logout();
+    navigate("/");
   };
 
   return (
