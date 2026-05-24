@@ -1,30 +1,29 @@
+import { useEffect, useState } from "react";
 import type { RankingUser } from "../../types/types";
 import RankingItem from "../RankingItem/RankingItem";
-
-const rankingMock: RankingUser[] = [
-  {
-    id: "1",
-    username: "JUANPEREZ_10",
-    totalPoints: 290,
-    correctPredictions: 25,
-  },
-  {
-    id: "2",
-    username: "JUANPEREZ_9",
-    totalPoints: 160,
-    correctPredictions: 23,
-  },
-  {
-    id: "3",
-    username: "RODO GIET_5",
-    totalPoints: 150,
-    correctPredictions: 16,
-  },
-  { id: "4", username: "GUANPREZ_3", totalPoints: 10, correctPredictions: 11 },
-  { id: "5", username: "JUANPEREZ_1", totalPoints: 10, correctPredictions: 10 },
-];
+import { getRanking } from "../../services/userService";
 
 const RankingTable = () => {
+  // 1. Inicializamos el estado con un array vacío
+  const [ranking, setRanking] = useState<RankingUser[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  // 2. Cargamos los datos reales al montar el componente
+  useEffect(() => {
+    const fetchRanking = async () => {
+      try {
+        const data = await getRanking();
+        setRanking(data);
+      } catch (error) {
+        console.error("Error al cargar el ranking en la UI:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRanking();
+  }, []);
+
   return (
     <div className="w-full overflow-hidden border-4 border-border-retro bg-bg-card shadow-[4px_4px_0px_0px_var(--color-border-retro)]">
       <div className="overflow-x-auto">
@@ -43,13 +42,31 @@ const RankingTable = () => {
           </thead>
 
           <tbody className="divide-y-4 divide-border-retro font-bold text-base bg-[linear-gradient(to_right,rgba(0,0,0,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.03)_1px,transparent_1px)] bg-[size:16px_16px] dark:bg-[linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)]">
-            {rankingMock.map((user, index) => {
-              const position = index + 1;
-
-              return (
-                <RankingItem key={user.id} user={user} position={position} />
-              );
-            })}
+            {/* 3. Renderizado condicional por si está cargando */}
+            {loading ? (
+              <tr>
+                <td
+                  colSpan={4}
+                  className="py-8 text-center animate-pulse tracking-widest uppercase"
+                >
+                  Cargando Ranking...
+                </td>
+              </tr>
+            ) : ranking.length === 0 ? (
+              <tr>
+                <td colSpan={4} className="py-8 text-center uppercase">
+                  No hay jugadores registrados
+                </td>
+              </tr>
+            ) : (
+              // 4. Mapeamos el estado dinámico "ranking" en vez del mock
+              ranking.map((user, index) => {
+                const position = index + 1;
+                return (
+                  <RankingItem key={user.id} user={user} position={position} />
+                );
+              })
+            )}
           </tbody>
         </table>
       </div>

@@ -1,45 +1,62 @@
 import type { RankingUser } from "../types/types";
 
-const rankingMock: RankingUser[] = [
-  {
-    id: "1",
-    username: "JUANPEREZ_10",
-    totalPoints: 290,
-    correctPredictions: 25,
-  },
-  {
-    id: "2",
-    username: "JUANPEREZ_9",
-    totalPoints: 160,
-    correctPredictions: 23,
-  },
-  {
-    id: "3",
-    username: "RODO GIET_5",
-    totalPoints: 150,
-    correctPredictions: 16,
-  },
-  { id: "4", username: "GUANPREZ_3", totalPoints: 10, correctPredictions: 11 },
-  { id: "5", username: "JUANPEREZ_1", totalPoints: 10, correctPredictions: 10 },
-];
+const MULTIPLICADOR_PUNTAJE = 3;
 
-// Obtener todos los usuarios ordenados por puntaje
+/* Obtener todos los usuarios de la base de datos ordenados por puntaje */
 export const getRanking = async (): Promise<RankingUser[]> => {
-  return [...rankingMock].sort((a, b) => b.totalPoints - a.totalPoints);
+  try {
+    const response = await fetch("/api/users");
+    if (!response.ok) throw new Error("Error al obtener el ranking");
+
+    const json = await response.json();
+    const usersFromDB = json.data;
+
+    // Se mapea los datos de la DB al tipo que esperan los componentes
+    const mappedUsers: RankingUser[] = usersFromDB.map((u: any) => ({
+      id: u.id,
+      username: u.username,
+      totalPoints: u.correctPredictions * MULTIPLICADOR_PUNTAJE,
+      correctPredictions: u.correctPredictions,
+    }));
+
+    return mappedUsers.sort(
+      (a, b) => b.correctPredictions - a.correctPredictions,
+    );
+  } catch (error) {
+    console.error("Error en getRanking:", error);
+    return [];
+  }
 };
 
+/* Obtener los detalles de un usuario especifico */
 export const getUserDetails = async (
   id: string,
 ): Promise<{ user: RankingUser; position: number } | null> => {
-  const sortedRanking = [...rankingMock].sort(
-    (a, b) => b.totalPoints - a.totalPoints,
-  );
-  const index = sortedRanking.findIndex((u) => u.id === id);
+  try {
+    const response = await fetch(`/api/users/${id}`);
 
-  if (index === -1) return null;
+    if (!response.ok) {
+      throw new Error(`No se pudo obtener el usuario con ID: ${id}`);
+    }
 
-  return {
-    user: sortedRanking[index],
-    position: index + 1,
-  };
+    const json = await response.json();
+    const dbUser = json.data;
+
+    if (!dbUser) return null;
+
+    const user: RankingUser = {
+      id: dbUser.id,
+      username: dbUser.username,
+      totalPoints: dbUser.correctPredictions * MULTIPLICADOR_PUNTAJE,
+      correctPredictions: dbUser.correctPredictions,
+    };
+
+    return {
+      user,
+      position: 1, // TODO: CAMBIAR A POSICION REAL, QUE SE GUARDA EN LA DB
+    };
+  } catch (error) {
+    console.error("Error en getUserDetails:", error);
+    return null;
+  }
 };
