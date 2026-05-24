@@ -21,7 +21,7 @@ const Navbar = () => {
             {/* Mi Prode: Solo visible si está logueado */}
             {isLoggedIn && (
               <Link
-                to="/mi-prode"
+                to="/prode/1"
                 className="text-sm font-medium text-secondary transition-colors hover:text-primary"
               >
                 Mi Prode
