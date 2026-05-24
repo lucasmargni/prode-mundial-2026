@@ -26,7 +26,7 @@ const AuthForm = ({ isLoginTab }: AuthFormProps) => {
       return;
     }
 
-    const passwordValidation = validatePassword(password);
+    const passwordValidation = validatePassword(password, username);
     if (!passwordValidation.isValid) {
       setAuthError(passwordValidation.message);
       return;

@@ -39,15 +39,15 @@ const ProdeDetails = () => {
 
   if (loading) {
     return (
-      <main className="max-w-4xl mx-auto px-4 py-16 text-center font-mono uppercase font-black text-secondary">
+      <div className="max-w-4xl mx-auto px-4 py-16 text-center font-mono uppercase font-black text-secondary w-full">
         Cargando Jugador...
-      </main>
+      </div>
     );
   }
 
   if (!playerData) {
     return (
-      <main className="max-w-4xl mx-auto px-4 py-16 text-center font-mono">
+      <div className="max-w-4xl mx-auto px-4 py-16 text-center font-mono w-full">
         <h1 className="text-3xl font-black text-[#e63946] uppercase mb-4">
           JUGADOR NO ENCONTRADO
         </h1>
@@ -60,15 +60,15 @@ const ProdeDetails = () => {
         >
           VOLVER AL RANKING
         </Link>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="max-w-4xl mx-auto px-4 py-12 font-mono select-none">
+    <div className="max-w-4xl mx-auto px-4 py-12 font-mono select-none w-full overflow-hidden">
       <ProdeHeader user={playerData.user} position={playerData.position} />
       <ProdeStages predictions={predictions} onPredict={handlePredict} />
-    </main>
+    </div>
   );
 };
 

@@ -1,4 +1,3 @@
-/* src/pages/Home/Home.tsx */
 import RankingTable from "../../components/RankingTable/RankingTable";
 import LoginModal from "../../components/LoginModal/LoginModal";
 import { useAuth } from "../../contexts/AuthContext";
@@ -8,14 +7,14 @@ const Home = () => {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-gray-900 text-white">
+      <div className="flex flex-grow items-center justify-center bg-gray-900 text-white font-mono uppercase tracking-widest">
         <p className="text-xl font-semibold animate-pulse">Cargando prode...</p>
       </div>
     );
   }
 
   return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
       <header className="text-center mb-10">
         <h1 className="text-4xl font-black tracking-tight sm:text-5xl">
           Posiciones del <span className="text-primary">Prode</span>
@@ -25,12 +24,12 @@ const Home = () => {
         </p>
       </header>
 
-      <section className="mt-8 max-w-3xl mx-auto">
+      <section className="mt-8 max-w-3xl mx-auto w-full">
         <RankingTable />
       </section>
 
       {!user && <LoginModal />}
-    </main>
+    </div>
   );
 };
 

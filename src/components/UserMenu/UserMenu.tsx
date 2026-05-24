@@ -48,7 +48,7 @@ const UserMenu = () => {
           {userInitial}
         </div>
         <span className="hidden sm:inline font-medium text-sm text-text-main dark:text-slate-200 group-hover:text-primary transition-colors">
-          Hola, <strong className="font-black">{user.username}</strong>
+          Hola, <strong className="font-black">{user.username}</strong>!
         </span>
         <svg
           xmlns="http://www.w3.org/2000/svg"
