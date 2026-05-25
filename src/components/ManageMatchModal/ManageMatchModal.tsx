@@ -1,6 +1,7 @@
 import { useState } from "react";
 import ModalWrapper from "../ModalWrapper/ModalWrapper";
 import { submitMatchResult, getAllMatches } from "../../services/matchService";
+import { computeScoresAndPositionsAfterMatch } from "../../services/userService";
 import { teamDictionary } from "../../utils/teams";
 import type { Match } from "../../types/types";
 
@@ -11,6 +12,7 @@ const ManageMatchModal = ({ onClose }: { onClose: () => void }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [statusMessage, setStatusMessage] = useState("");
 
   const handleSearch = async () => {
     if (!matchId.trim()) return;
@@ -48,13 +50,27 @@ const ManageMatchModal = ({ onClose }: { onClose: () => void }) => {
     setLoading(true);
     setError(null);
     try {
-      await submitMatchResult(matchData.id, localG, awayG, matchData.stage);
+      setStatusMessage("Guardando resultado del partido...");
+      const closedMatch = await submitMatchResult(
+        matchData.id,
+        localG,
+        awayG,
+        matchData.stage,
+      );
+
+      setStatusMessage(
+        "Calculando aciertos y reordenando posiciones del ranking global...",
+      );
+      await computeScoresAndPositionsAfterMatch(closedMatch);
+
       setSuccess(true);
+      setStatusMessage("¡Cómputos finalizados con éxito!");
       setTimeout(() => onClose(), 1500);
     } catch (err: any) {
-      setError(err.message || "Error al procesar el cierre del partido.");
+      setError(err.message || "Error al procesar la secuencia de cómputos.");
     } finally {
       setLoading(false);
+      setStatusMessage("");
     }
   };
 
@@ -67,9 +83,17 @@ const ManageMatchModal = ({ onClose }: { onClose: () => void }) => {
             {error}
           </div>
         )}
+
+        {/* Estado intermedio de la orquestación cliente */}
+        {loading && statusMessage && (
+          <div className="p-3 bg-secondary/10 border border-secondary/30 text-secondary text-sm rounded-xl font-medium animate-pulse">
+            {statusMessage}
+          </div>
+        )}
+
         {success && (
           <div className="p-3 bg-primary/10 border border-primary/30 text-primary text-sm rounded-xl font-medium">
-            Resultados guardados y puntos computados con éxito.
+            {statusMessage}
           </div>
         )}
 
@@ -90,7 +114,7 @@ const ManageMatchModal = ({ onClose }: { onClose: () => void }) => {
                 onClick={handleSearch}
                 className="px-5 bg-secondary text-white font-semibold rounded-xl hover:opacity-90 transition-opacity cursor-pointer"
               >
-                {loading ? "Buscando..." : "Buscar"}
+                Buscar
               </button>
             </div>
           </div>
@@ -98,7 +122,6 @@ const ManageMatchModal = ({ onClose }: { onClose: () => void }) => {
           <form onSubmit={handleSave} className="space-y-6">
             <div className="flex items-center justify-between text-center bg-bg-main border border-secondary/10 p-4 rounded-xl">
               <div className="flex-1">
-                {/* Obtenemos el emoji de bandera directamente del diccionario */}
                 <span
                   className="text-3xl block mb-1"
                   role="img"
@@ -127,7 +150,6 @@ const ManageMatchModal = ({ onClose }: { onClose: () => void }) => {
               </div>
             </div>
 
-            {/* Carga manual pura sin controles nativos de flechas */}
             <div className="grid grid-cols-2 gap-8 justify-items-center">
               <div className="text-center">
                 <label className="block text-xs font-bold text-secondary mb-2">
@@ -137,7 +159,6 @@ const ManageMatchModal = ({ onClose }: { onClose: () => void }) => {
                   type="number"
                   min="0"
                   required
-                  // Clases Tailwind para remover flechas (appearance-none)
                   className="w-20 h-14 text-center text-2xl font-black rounded-xl border border-secondary/20 bg-bg-main text-border-retro outline-none focus:border-primary transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   value={goals.local}
                   onChange={(e) =>
@@ -166,7 +187,7 @@ const ManageMatchModal = ({ onClose }: { onClose: () => void }) => {
               className="w-full py-3 bg-primary text-white font-bold rounded-xl hover:opacity-90 disabled:opacity-50 transition-all cursor-pointer"
             >
               {loading
-                ? "Procesando cómputos..."
+                ? "Ejecutando Secuencia..."
                 : "Confirmar y Cerrar Partido"}
             </button>
           </form>

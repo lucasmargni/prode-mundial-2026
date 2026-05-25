@@ -15,9 +15,7 @@ const RankingTable = () => {
     const fetchRanking = async () => {
       try {
         setLoading(true);
-
         const isLoggingIn = !previousUserIdRef.current && currentUser?.id;
-
         const data = await getRanking({ force: !!isLoggingIn });
         setRanking(data);
       } catch (error) {
@@ -28,7 +26,6 @@ const RankingTable = () => {
     };
 
     fetchRanking();
-
     previousUserIdRef.current = currentUser?.id;
   }, [currentUser]);
 
@@ -37,7 +34,7 @@ const RankingTable = () => {
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse font-mono select-none">
           <thead>
-            <tr className="border-b-4 border-border-retro bg-bg-main/80 text-sm font-black uppercase tracking-wider">
+            <tr className="border-b-4 border-border-retro bg-bg-main/80 text-sm font-black uppercase tracking-wider text-border-retro">
               <th className="py-4 px-6 text-center w-28">POSICIÓN</th>
               <th className="py-4 px-6">JUGADOR</th>
               <th className="py-4 px-6 text-center w-48">
@@ -49,30 +46,33 @@ const RankingTable = () => {
             </tr>
           </thead>
 
-          <tbody className="divide-y-4 divide-border-retro font-bold text-base bg-[linear-gradient(to_right,rgba(0,0,0,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.03)_1px,transparent_1px)] bg-[size:16px_16px] dark:bg-[linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)]">
+          <tbody className="divide-y-4 divide-border-retro font-bold text-base text-border-retro bg-[linear-gradient(to_right,rgba(0,0,0,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.03)_1px,transparent_1px)] bg-[size:16px_16px] dark:bg-[linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)]">
             {loading ? (
               <tr>
                 <td
                   colSpan={4}
-                  className="py-8 text-center animate-pulse tracking-widest uppercase"
+                  className="py-8 text-center animate-pulse tracking-widest uppercase text-secondary"
                 >
                   Cargando Ranking...
                 </td>
               </tr>
             ) : ranking.length === 0 ? (
               <tr>
-                <td colSpan={4} className="py-8 text-center uppercase">
+                <td
+                  colSpan={4}
+                  className="py-8 text-center uppercase text-secondary"
+                >
                   No hay jugadores registrados
                 </td>
               </tr>
             ) : (
               ranking.map((user, index) => {
-                const position = index + 1;
+                const realPosition = user.rankingPosition ?? index + 1;
                 return (
                   <RankingItem
                     key={user.id}
                     user={user}
-                    position={position}
+                    position={realPosition}
                     isCurrentUser={currentUser?.id === user.id}
                   />
                 );

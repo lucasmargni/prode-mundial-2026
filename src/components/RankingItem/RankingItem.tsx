@@ -19,7 +19,7 @@ const RankingItem = ({ user, position, isCurrentUser }: RankingItemProps) => {
     if (pos === 1) return "text-[#f3db6b]";
     if (pos === 2) return "text-[#cbd5e1]";
     if (pos === 3) return "text-[#e07a44]";
-    return "text-border-retro/80";
+    return "text-secondary";
   };
 
   const nameColorClass = getPodiumColor(position);
@@ -29,7 +29,7 @@ const RankingItem = ({ user, position, isCurrentUser }: RankingItemProps) => {
       onClick={() => navigate(`/prode/${user.id}`)}
       className={`transition-colors border-b-4 border-border-retro last:border-b-0 cursor-pointer select-none ${
         isCurrentUser
-          ? "bg-[#34d399]/20 hover:bg-[#34d399]/30"
+          ? "bg-primary/20 hover:bg-primary/30"
           : "hover:bg-primary/10"
       }`}
     >
@@ -67,21 +67,21 @@ const RankingItem = ({ user, position, isCurrentUser }: RankingItemProps) => {
       <td
         className={`py-2 px-6 text-lg font-black tracking-wide uppercase ${nameColorClass}`}
       >
-        <span className="block w-full">
+        <span className="block w-full text-border-retro">
           {user.username}{" "}
           {isCurrentUser && (
-            <span className="text-sm text-[#34d399] font-normal lowercase">
+            <span className="text-sm text-primary font-normal lowercase">
               (tú)
             </span>
           )}
         </span>
       </td>
 
-      <td className="py-2 px-6 text-center text-xl font-black text-[#34d399]">
+      <td className="py-2 px-6 text-center text-xl font-black text-primary">
         {user.correctPredictions.toString().padStart(2, "0")}
       </td>
 
-      <td className="py-2 px-6 text-right text-2xl font-black text-[#34d399]">
+      <td className="py-2 px-6 text-right text-2xl font-black text-primary">
         {user.totalPoints.toString().padStart(2, "0")}
       </td>
     </tr>

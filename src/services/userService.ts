@@ -1,7 +1,6 @@
 import localforage from "localforage";
-import type { RankingUser } from "../types/types";
+import type { RankingUser, Match, UserPrediction } from "../types/types";
 
-// Constante de tiempo (3 minutos)
 const CACHE_DURATION_MS = 3 * 60 * 1000;
 const MULTIPLICATIVE_POINTS = 3;
 
@@ -21,7 +20,6 @@ export const getRanking = async (
     const cachedData = await localforage.getItem<RankingUser[]>(RANKING_KEY);
     const cachedTime = await localforage.getItem<number>(RANKING_TIME_KEY);
 
-    // Si el cache existe y es nuevo, devolver datos en cache (Siempre y cuando NO se fuerce la búsqueda)
     if (
       !options?.force &&
       cachedData &&
@@ -31,7 +29,6 @@ export const getRanking = async (
       return cachedData;
     }
 
-    // Si expiro o se forzo la busqueda, consultar datos en la api saltando cache de red
     const cacheBuster = options?.force ? `?t=${now}` : "";
     const response = await fetch(`/api/users${cacheBuster}`, {
       method: "GET",
@@ -53,11 +50,14 @@ export const getRanking = async (
       username: u.username,
       totalPoints: u.correctPredictions * MULTIPLICATIVE_POINTS,
       correctPredictions: u.correctPredictions,
+      rankingPosition: u.rankingPosition ?? undefined,
     }));
 
-    const sortedUsers = mappedUsers.sort(
-      (a, b) => b.correctPredictions - a.correctPredictions,
-    );
+    const sortedUsers = mappedUsers.sort((a, b) => {
+      const posA = a.rankingPosition ?? Infinity;
+      const posB = b.rankingPosition ?? Infinity;
+      return posA - posB;
+    });
 
     await localforage.setItem(RANKING_KEY, sortedUsers);
     await localforage.setItem(RANKING_TIME_KEY, now);
@@ -65,7 +65,6 @@ export const getRanking = async (
     return sortedUsers;
   } catch (error) {
     console.error("Error en getRanking:", error);
-    // Contingencia: si cae la red, devolvemos lo ultimo que quedo en cache
     const backup = await localforage.getItem<RankingUser[]>(RANKING_KEY);
     return backup || [];
   }
@@ -90,7 +89,6 @@ export const getUserDetails = async (
       return cachedData;
     }
 
-    // Si expiro, consultar datos en la api
     const response = await fetch(`/api/users/${id}`);
 
     if (!response.ok) {
@@ -102,18 +100,18 @@ export const getUserDetails = async (
 
     if (!dbUser) return null;
 
+    const position = dbUser.rankingPosition ?? 0;
+
     const user: RankingUser = {
       id: dbUser.id,
       username: dbUser.username,
       totalPoints: dbUser.correctPredictions * MULTIPLICATIVE_POINTS,
       correctPredictions: dbUser.correctPredictions,
+      rankingPosition: position,
     };
-
-    const position = dbUser.rankingPosition ?? 0;
 
     const result = { user, position };
 
-    // Guardamos el objeto completo devuelto en la caché
     await localforage.setItem(USER_KEY, result);
     await localforage.setItem(USER_TIME_KEY, now);
 
@@ -125,5 +123,98 @@ export const getUserDetails = async (
       position: number;
     }>(USER_KEY);
     return backupData || null;
+  }
+};
+
+/* Procesa puntos y rankings completos desde el cliente */
+export const computeScoresAndPositionsAfterMatch = async (
+  finishedMatch: Match,
+): Promise<void> => {
+  try {
+    const usersResponse = await fetch("/api/users", { method: "GET" });
+    if (!usersResponse.ok)
+      throw new Error(
+        "No se pudo obtener la lista de usuarios para calcular puntos.",
+      );
+    const usersJson = await usersResponse.json();
+    const allUsersFromDB = usersJson.data || [];
+
+    // Revisar predicciones individuales y sumar aciertos
+    const updatedUsersList: RankingUser[] = [];
+
+    for (const u of allUsersFromDB) {
+      let currentAciertos = Number(u.correctPredictions) || 0;
+
+      // Consultar el endpoint de predicciones para este usuario específico
+      const predResponse = await fetch(`/api/predictions?userId=${u.id}`, {
+        method: "GET",
+      });
+
+      if (predResponse.ok) {
+        const predJson = await predResponse.json();
+        const userPredictions: UserPrediction[] = predJson.data || [];
+
+        // Buscar si este usuario predijo el partido en cuestión
+        const matchPrediction = userPredictions.find(
+          (p) => p.matchId === finishedMatch.id,
+        );
+
+        // Si predijo y su elección coincide con el resultado real del partido, sumamos un acierto
+        if (
+          matchPrediction &&
+          matchPrediction.choice === finishedMatch.realResult
+        ) {
+          currentAciertos += 1;
+
+          // Impactamos los nuevos aciertos inmediatamente en su endpoint PATCH individual
+          await fetch(`/api/users/${u.id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ correctPredictions: currentAciertos }),
+          });
+        }
+      }
+
+      // Guardamos en memoria el estado temporal del usuario para el posterior cálculo de posiciones
+      updatedUsersList.push({
+        id: u.id,
+        username: u.username,
+        correctPredictions: currentAciertos,
+        totalPoints: currentAciertos * MULTIPLICATIVE_POINTS,
+      });
+    }
+
+    // Ordenar la lista completa según los nuevos puntajes acumulados
+    // Mayor cantidad de predicciones correctas va primero en la tabla
+    const tempSorted = [...updatedUsersList].sort(
+      (a, b) => b.correctPredictions - a.correctPredictions,
+    );
+
+    // Asignar posiciones relativas consecutivas y fijarlas en la base de datos
+    for (let index = 0; index < tempSorted.length; index++) {
+      const assignedPosition = index + 1;
+      const targetUser = tempSorted[index];
+
+      // Modificar nueva posicion real de los usuarios
+      await fetch(`/api/users/${targetUser.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rankingPosition: assignedPosition }),
+      });
+    }
+
+    await localforage.removeItem("ranking_data");
+    await localforage.removeItem("ranking_cache_time");
+
+    for (const u of tempSorted) {
+      await localforage.removeItem(`user_data_${u.id}`);
+      await localforage.removeItem(`user_cache_time_${u.id}`);
+    }
+  } catch (error) {
+    console.error(
+      "Error crítico en la orquestación de cómputos en el cliente:",
+      error,
+    );
+    throw error;
   }
 };

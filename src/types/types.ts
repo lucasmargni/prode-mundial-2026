@@ -51,4 +51,5 @@ export interface RankingUser {
   totalPoints: number;
   correctPredictions: number;
   role?: UserRole;
+  rankingPosition?: number;
 }
