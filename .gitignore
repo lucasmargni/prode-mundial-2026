@@ -32,3 +32,4 @@ src/generated/prisma/
 *.njsproj
 *.sln
 *.sw?
+.env*

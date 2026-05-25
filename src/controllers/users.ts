@@ -63,13 +63,14 @@ export const getUserById = async (id: string) => {
   return user;
 };
 
-export const updateCorrectPredictions = async (
+/* Actualiza dinámicamente cualquier campo numerico del perfil del usuario */
+export const updateUserData = async (
   id: string,
-  predictions: number,
+  data: { correctPredictions?: number; rankingPosition?: number },
 ) => {
   const updatedUser = await prisma.user.update({
     where: { id },
-    data: { correctPredictions: predictions },
+    data: data,
     select: {
       id: true,
       username: true,
@@ -99,4 +100,14 @@ export const verifyUserCredentials = async (
   }
 
   return null;
+};
+
+/* Verificar si un usuario es administrador */
+export const checkIsAdmin = async (userId: string): Promise<boolean> => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { role: true },
+  });
+
+  return user?.role === "ADMIN";
 };

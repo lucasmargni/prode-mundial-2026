@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "http";
-import { getAllMatches, createMatch } from "../../src/controllers/matches.js";
+import { getAllMatches } from "../../src/controllers/matches.js";
 
 export default async function handler(
   req: IncomingMessage,
@@ -21,37 +21,7 @@ export default async function handler(
       return sendResponse(200, { status: "success", data: matches });
     }
 
-    if (method === "POST") {
-      let body = "";
-
-      await new Promise<void>((resolve, reject) => {
-        req.on("data", (chunk) => {
-          body += chunk;
-        });
-        req.on("end", () => resolve());
-        req.on("error", (err) => reject(err));
-      });
-
-      const { id, stage, localTeamCode, awayTeamCode, date } = JSON.parse(body);
-
-      if (!id || !stage || !localTeamCode || !awayTeamCode || !date) {
-        return sendResponse(400, {
-          status: "error",
-          error: "Faltan campos obligatorios para crear el partido",
-        });
-      }
-
-      const match = await createMatch({
-        id,
-        stage,
-        localTeamCode,
-        awayTeamCode,
-        date,
-      });
-      return sendResponse(200, { status: "success", data: match });
-    }
-
-    res.setHeader("Allow", "GET, POST");
+    res.setHeader("Allow", "GET");
     return sendResponse(405, { error: `Método ${method} no permitido` });
   } catch (error: any) {
     return sendResponse(500, {

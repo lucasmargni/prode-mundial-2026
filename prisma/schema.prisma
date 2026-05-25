@@ -7,13 +7,19 @@ generator client {
   output   = "../src/generated/prisma"
 }
 
+enum Role {
+  USER
+  ADMIN
+}
+
 model User {
-  id                 String   @id @default(uuid())
-  username           String   @unique
+  id                 String       @id @default(uuid())
+  username           String       @unique
   password           String
-  correctPredictions Int      @default(0)
-  rankingPosition    Int      @default(0)
-  createdAt          DateTime @default(now())
+  role               Role         @default(USER)
+  correctPredictions Int          @default(0)
+  rankingPosition    Int          @default(0)
+  createdAt          DateTime     @default(now())
 
   // un usuario puede tener muchas predicciones guardadas
   predictions        Prediction[]
@@ -26,6 +32,8 @@ model Match {
   awayTeamCode   String
   date           DateTime
   isFinished     Boolean      @default(false)
+  realGoalsLocal Int?
+  realGoalsAway  Int?
   realResult     String?
 
   // un partido puede estar en muchas predicciones de distintos usuarios

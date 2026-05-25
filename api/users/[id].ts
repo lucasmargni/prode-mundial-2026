@@ -1,9 +1,8 @@
-/* .../api/users/:id */
 import type { IncomingMessage, ServerResponse } from "http";
 import {
   existsUserId,
   getUserById,
-  updateCorrectPredictions,
+  updateUserData,
 } from "../../src/controllers/users.js";
 
 export default async function handler(
@@ -12,11 +11,8 @@ export default async function handler(
 ) {
   const method = req.method;
 
-  // eliminar query params
   const urlWithoutQueries = req.url?.split("?")[0] || "";
-  // separar url
   const urlParts = urlWithoutQueries.split("/").filter(Boolean);
-  // obtener el id del usuario
   const userId = urlParts[urlParts.length - 1] || "";
 
   const sendResponse = (statusCode: number, data: any) => {
@@ -43,7 +39,7 @@ export default async function handler(
       return sendResponse(200, { status: "success", data: user });
     }
 
-    // modificar el dato del usuario pasado por body
+    // modificar los datos del usuario pasado por body
     if (method === "PATCH") {
       let body = "";
 
@@ -53,26 +49,46 @@ export default async function handler(
 
       return req.on("end", async () => {
         try {
-          const { correctPredictions } = JSON.parse(body);
+          const { correctPredictions, rankingPosition } = JSON.parse(body);
 
-          if (correctPredictions === undefined || correctPredictions === null) {
+          // Objeto dinámico que contendrá solo los campos enviados
+          const fieldsToUpdate: {
+            correctPredictions?: number;
+            rankingPosition?: number;
+          } = {};
+
+          // Validar correctPredictions si viene en el body
+          if (correctPredictions !== undefined && correctPredictions !== null) {
+            const numericPredictions = Number(correctPredictions);
+            if (isNaN(numericPredictions)) {
+              return sendResponse(400, {
+                error: "El campo correctPredictions debe ser un número válido",
+              });
+            }
+            fieldsToUpdate.correctPredictions = numericPredictions;
+          }
+
+          // Validar rankingPosition si viene en el body
+          if (rankingPosition !== undefined && rankingPosition !== null) {
+            const numericRanking = Number(rankingPosition);
+            if (isNaN(numericRanking)) {
+              return sendResponse(400, {
+                error: "El campo rankingPosition debe ser un número válido",
+              });
+            }
+            fieldsToUpdate.rankingPosition = numericRanking;
+          }
+
+          // Si no vino ninguno de los dos campos
+          if (Object.keys(fieldsToUpdate).length === 0) {
             return sendResponse(400, {
-              error: "Falta campo de usuario: correctPredictions",
+              error:
+                "Se requiere al menos uno de los campos válidos para actualizar: correctPredictions o rankingPosition",
             });
           }
 
-          const numericPredictions = Number(correctPredictions);
-
-          if (isNaN(numericPredictions)) {
-            return sendResponse(400, {
-              error: "El campo correctPredictions debe ser un número válido",
-            });
-          }
-
-          const result = await updateCorrectPredictions(
-            userId,
-            numericPredictions,
-          );
+          // Enviamos el objeto con los datos procesados al controlador
+          const result = await updateUserData(userId, fieldsToUpdate);
 
           return sendResponse(200, { status: "success", data: result });
         } catch (jsonError: any) {

@@ -27,7 +27,6 @@ const formatRetroDate = (dateString: string): string => {
   const hours = String(d.getUTCHours()).padStart(2, "0");
   const minutes = String(d.getUTCMinutes()).padStart(2, "0");
 
-  // Armamos la cadena con tu estructura exacta: 11 JUN 2026 - 16:00 HS
   return `${day} ${month} ${year} - ${hours}:${minutes} hs`;
 };
 
@@ -43,6 +42,15 @@ const mapDBMatches = (matchesFromDB: any[]): Match[] => {
     realGoalsAway: m.realGoalsAway ?? undefined,
     realResult: m.realResult ?? undefined,
   }));
+};
+
+const clearMatchesCache = async (stage?: TournamentStage): Promise<void> => {
+  await localforage.removeItem("matches_data_all");
+  await localforage.removeItem("matches_cache_time_all");
+  if (stage) {
+    await localforage.removeItem(`matches_data_${stage}`);
+    await localforage.removeItem(`matches_cache_time_${stage}`);
+  }
 };
 
 /* Obtener todos los partidos */
@@ -80,7 +88,7 @@ export const getAllMatches = async (): Promise<Match[]> => {
   }
 };
 
-/* Obtener partidos filtrados por Etapa */
+/* Obtener partidos filtrados por etapa */
 export const getMatchesByStage = async (
   stage: TournamentStage,
 ): Promise<Match[]> => {
@@ -115,5 +123,86 @@ export const getMatchesByStage = async (
     console.error(`Error en getMatchesByStage (${stage}):`, error);
     const backup = await localforage.getItem<Match[]>(CACHE_KEY);
     return backup || [];
+  }
+};
+
+/* Envia los resultados confiando en la sesion de la cookie */
+export const submitMatchResult = async (
+  matchId: string,
+  goalsLocal: number,
+  goalsAway: number,
+  stage?: TournamentStage,
+): Promise<Match> => {
+  try {
+    const response = await fetch(`/api/matches/${matchId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        realGoalsLocal: goalsLocal,
+        realGoalsAway: goalsAway,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorJson = await response.json().catch(() => ({}));
+      throw new Error(
+        errorJson.error || "Error al actualizar el resultado del partido",
+      );
+    }
+
+    const json = await response.json();
+
+    // Limpieza de caches locales
+    await clearMatchesCache(stage);
+
+    const [mappedMatch] = mapDBMatches([json.data]);
+    return mappedMatch;
+  } catch (error) {
+    console.error("Error en submitMatchResult:", error);
+    throw error;
+  }
+};
+
+/* Crear un nuevo partido */
+export const createNewMatch = async (data: {
+  id: string;
+  stage: TournamentStage;
+  localTeamCode: string;
+  awayTeamCode: string;
+  date: string; // ISO String provisto por el formulario
+}): Promise<Match> => {
+  try {
+    // Mandamos el ID directo en la URL cumpliendo la lógica de tu handler unificado
+    const response = await fetch(`/api/matches/${data.id}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        stage: data.stage,
+        localTeamCode: data.localTeamCode,
+        awayTeamCode: data.awayTeamCode,
+        date: data.date,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorJson = await response.json().catch(() => ({}));
+      throw new Error(
+        errorJson.error || "Error al intentar crear el nuevo partido",
+      );
+    }
+
+    const json = await response.json();
+
+    await clearMatchesCache(data.stage);
+
+    const [mappedMatch] = mapDBMatches([json.data]);
+    return mappedMatch;
+  } catch (error) {
+    console.error("Error en createNewMatch:", error);
+    throw error;
   }
 };

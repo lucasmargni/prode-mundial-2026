@@ -2,7 +2,6 @@ import { prisma } from "../lib/prisma.js";
 
 /* Obtener todos los partidos */
 export const getAllMatches = async (stage?: string | null) => {
-  // Si viene la stage la agregamos al filtro, si no, pasamos un objeto vacío para traer todo
   const whereClause = stage ? { stage } : {};
 
   const matches = await prisma.match.findMany({
@@ -40,4 +39,27 @@ export const createMatch = async (data: {
     },
   });
   return newMatch;
+};
+
+/* Actualizar el resultado y goles de un partido */
+export const updateMatchResult = async (
+  id: string,
+  data: { realGoalsLocal: number; realGoalsAway: number },
+) => {
+  // Calculamos quien gana o si hubo empate
+  let calculatedResult = "E";
+  if (data.realGoalsLocal > data.realGoalsAway) calculatedResult = "L";
+  if (data.realGoalsLocal < data.realGoalsAway) calculatedResult = "V";
+
+  const updatedMatch = await prisma.match.update({
+    where: { id },
+    data: {
+      realGoalsLocal: data.realGoalsLocal,
+      realGoalsAway: data.realGoalsAway,
+      realResult: calculatedResult,
+      isFinished: true,
+    },
+  });
+
+  return updatedMatch;
 };

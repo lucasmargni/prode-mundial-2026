@@ -10,6 +10,8 @@ export type TournamentStage =
 /* L -> gana local, E -> empate, V -> gana visitante */
 export type PredictionChoice = "L" | "E" | "V";
 
+export type UserRole = "USER" | "ADMIN";
+
 export interface Team {
   id: string;
   name: string;
@@ -24,7 +26,6 @@ export interface Match {
   awayTeam: Team;
   date: string;
   isFinished: boolean;
-
   realGoalsLocal?: number;
   realGoalsAway?: number;
   realResult?: PredictionChoice;
@@ -34,14 +35,13 @@ export interface UserPrediction {
   matchId: string;
   userId: string;
   choice: PredictionChoice;
-
   isCorrect?: boolean;
 }
 
 export interface StageStatus {
   id: TournamentStage;
   name: string;
-  lockDate: string; /* Primer partido de la etapa que determina el límite para votar */
+  lockDate: string;
 }
 
 export interface RankingUser {
@@ -50,4 +50,5 @@ export interface RankingUser {
   avatarUrl?: string;
   totalPoints: number;
   correctPredictions: number;
+  role?: UserRole;
 }
