@@ -19,10 +19,15 @@ export const createUser = async (username: string, password: string) => {
   const saltRounds = 10;
   const hashedPass = await bcrypt.hash(password, saltRounds);
 
+  const totalUsersCount = await prisma.user.count();
+
+  const initialRankingPosition = totalUsersCount + 1;
+
   const newUser = await prisma.user.create({
     data: {
       username,
       password: hashedPass,
+      rankingPosition: initialRankingPosition,
     },
     select: {
       id: true,
@@ -63,7 +68,6 @@ export const getUserById = async (id: string) => {
   return user;
 };
 
-/* Actualiza dinámicamente cualquier campo numerico del perfil del usuario */
 export const updateUserData = async (
   id: string,
   data: { correctPredictions?: number; rankingPosition?: number },
