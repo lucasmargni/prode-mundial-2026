@@ -9,7 +9,7 @@ export const teamDictionary: Record<string, { name: string; flagUrl: string }> =
 
     CAN: { name: "CANADÁ", flagUrl: "🇨🇦" },
     BIH: { name: "BOSNIA Y HERZEGOVINA", flagUrl: "🇧🇦" },
-    QAT: { name: "CATAR", flagUrl: "🇶🇦" },
+    QAT: { name: "QATAR", flagUrl: "🇶🇦" },
     SUI: { name: "SUIZA", flagUrl: "🇨🇭" },
 
     BRA: { name: "BRASIL", flagUrl: "🇧🇷" },

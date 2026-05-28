@@ -1,4 +1,3 @@
-/* src/components/ProdeStages/ProdeStages.tsx */
 import { useState } from "react";
 import type {
   TournamentStage,
@@ -8,17 +7,26 @@ import type {
 import { STAGES_DATA } from "../../constants/stages";
 import MatchCard from "../MatchCard/MatchCard";
 import StageButton from "../StageButton/StageButton";
+import SavePredictionButton from "../SavePredictionButton/SavePredictionButton";
 
 interface ProdeStagesProps {
   matches: Match[];
   predictions: Record<string, PredictionChoice>;
   onPredict: (matchId: string, choice: PredictionChoice) => void;
+  isOwnProde: boolean;
+  isSaving: boolean;
+  saveMessage: { text: string; isError: boolean } | null;
+  onSave: () => void;
 }
 
 export const ProdeStages = ({
   matches,
   predictions,
   onPredict,
+  isOwnProde,
+  isSaving,
+  saveMessage,
+  onSave,
 }: ProdeStagesProps) => {
   const todayStr = new Date().toISOString().split("T")[0];
 
@@ -49,6 +57,14 @@ export const ProdeStages = ({
           />
         ))}
       </nav>
+
+      {isOwnProde && (
+        <SavePredictionButton
+          isSaving={isSaving}
+          saveMessage={saveMessage}
+          onSave={onSave}
+        />
+      )}
 
       <section className="space-y-6">
         {filteredMatches.length === 0 ? (

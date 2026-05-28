@@ -114,37 +114,19 @@ const ProdeDetails = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-12 font-mono select-none w-full overflow-hidden">
-      <ProdeHeader user={playerData.user} position={playerData.position} />
+  <div className="max-w-4xl mx-auto px-4 py-12 font-mono select-none w-full">
+    <ProdeHeader user={playerData.user} position={playerData.position} />
 
-      <ProdeStages
-        matches={matches}
-        predictions={predictions}
-        onPredict={handlePredict}
-      />
-
-      {isOwnProde && (
-        <div className="mt-12 flex flex-col items-center space-y-4 border-t-4 border-dashed border-border-retro/40 pt-8">
-          <button
-            onClick={handleSaveClick}
-            disabled={isSaving}
-            className="w-full sm:w-auto min-w-[280px] border-4 border-border-retro bg-primary text-white px-8 py-4 font-black uppercase tracking-wider text-lg shadow-[6px_6px_0px_0px_var(--color-border-retro)] transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90 active:translate-x-1 active:translate-y-1 active:shadow-[2px_2px_0px_0px_var(--color-border-retro)] cursor-pointer"
-          >
-            {isSaving ? "GUARDANDO JUGADAS..." : "GUARDAR PREDICCIONES"}
-          </button>
-
-          {saveMessage && (
-            <p
-              className={`text-sm font-black uppercase tracking-widest animate-pulse ${
-                saveMessage.isError ? "text-[#e63946]" : "text-emerald-500"
-              }`}
-            >
-              {saveMessage.text}
-            </p>
-          )}
-        </div>
-      )}
-    </div>
+    <ProdeStages
+      matches={matches}
+      predictions={predictions}
+      onPredict={handlePredict}
+      isOwnProde={isOwnProde}
+      isSaving={isSaving}
+      saveMessage={saveMessage}
+      onSave={handleSaveClick}
+    />
+  </div>
   );
 };
 
