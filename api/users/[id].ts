@@ -3,6 +3,7 @@ import {
   existsUserId,
   getUserById,
   updateUserData,
+  deleteUser,
 } from "../../src/controllers/users.js";
 
 export default async function handler(
@@ -95,6 +96,11 @@ export default async function handler(
           return sendResponse(400, { error: "JSON malformado en el body" });
         }
       });
+    }
+
+    if(method === "DELETE") {
+      await deleteUser(userId);
+      return sendResponse(200, { status: "success", data: [] });
     }
 
     res.setHeader("Allow", "GET, PATCH");

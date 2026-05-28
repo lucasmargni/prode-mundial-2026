@@ -86,6 +86,12 @@ export const updateUserData = async (
   return updatedUser;
 };
 
+export const deleteUser = async (id: string) => {
+  await prisma.user.delete({
+    where: { id },
+  });
+};
+
 export const verifyUserCredentials = async (
   username: string,
   textPassword: string,
