@@ -52,7 +52,7 @@ const AuthForm = ({ isLoginTab }: AuthFormProps) => {
       setUsername("");
       setPassword("");
     } catch (err: any) {
-      setAuthError(err.message);
+      setAuthError("Ha surgido un error, intente nuevamente");
     } finally {
       setAuthLoading(false);
     }
