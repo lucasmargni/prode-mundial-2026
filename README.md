@@ -166,7 +166,13 @@ JWT_SECRET=tu_jwt_secret
 npx prisma generate
 ```
 
-### 5. Ejecutar entorno de desarrollo
+### 5. Inicializar bd con datos
+
+```bash
+npx prisma db seed
+```
+
+### 6. Ejecutar entorno de desarrollo
 
 ```bash
 vercel dev
