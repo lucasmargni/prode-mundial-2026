@@ -18,25 +18,26 @@ export const saveUserPredictions = async (
   userId: string,
   predictions: Array<{ matchId: string; choice: string }>,
 ) => {
-  const ops = predictions.map((pred) =>
-    prisma.prediction.upsert({
-      where: {
-        userId_matchId: {
-          userId,
-          matchId: pred.matchId,
-        },
-      },
-      update: {
-        choice: pred.choice,
-      },
-      create: {
-        userId,
-        matchId: pred.matchId,
-        choice: pred.choice,
-      },
-    }),
-  );
+  if (predictions.length === 0) return true;
 
-  await prisma.$transaction(ops);
+  // Procesamos en lotes de 10 para no saturar las conexiones de la bd
+  const BATCH_SIZE = 10;
+
+  for (let i = 0; i < predictions.length; i += BATCH_SIZE) {
+    const batch = predictions.slice(i, i + BATCH_SIZE);
+
+    const ops = batch.map((pred) =>
+      prisma.prediction.upsert({
+        where: {
+          userId_matchId: { userId, matchId: pred.matchId },
+        },
+        update: { choice: pred.choice },
+        create: { userId, matchId: pred.matchId, choice: pred.choice },
+      }),
+    );
+
+    await prisma.$transaction(ops);
+  }
+
   return true;
 };

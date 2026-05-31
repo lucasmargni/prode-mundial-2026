@@ -126,95 +126,21 @@ export const getUserDetails = async (
   }
 };
 
-/* Procesa puntos y rankings completos desde el cliente */
 export const computeScoresAndPositionsAfterMatch = async (
   finishedMatch: Match,
 ): Promise<void> => {
-  try {
-    const usersResponse = await fetch("/api/users", { method: "GET" });
-    if (!usersResponse.ok)
-      throw new Error(
-        "No se pudo obtener la lista de usuarios para calcular puntos.",
-      );
-    const usersJson = await usersResponse.json();
-    const allUsersFromDB = usersJson.data || [];
+  const response = await fetch("/api/matches/compute", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ matchId: finishedMatch.id }),
+  });
 
-    // Revisar predicciones individuales y sumar aciertos
-    const updatedUsersList: RankingUser[] = [];
-
-    for (const u of allUsersFromDB) {
-      let currentAciertos = Number(u.correctPredictions) || 0;
-
-      // Consultar el endpoint de predicciones para este usuario específico
-      const predResponse = await fetch(`/api/predictions?userId=${u.id}`, {
-        method: "GET",
-      });
-
-      if (predResponse.ok) {
-        const predJson = await predResponse.json();
-        const userPredictions: UserPrediction[] = predJson.data || [];
-
-        // Buscar si este usuario predijo el partido en cuestión
-        const matchPrediction = userPredictions.find(
-          (p) => p.matchId === finishedMatch.id,
-        );
-
-        // Si predijo y su elección coincide con el resultado real del partido, sumamos un acierto
-        if (
-          matchPrediction &&
-          matchPrediction.choice === finishedMatch.realResult
-        ) {
-          currentAciertos += 1;
-
-          // Impactamos los nuevos aciertos inmediatamente en su endpoint PATCH individual
-          await fetch(`/api/users/${u.id}`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ correctPredictions: currentAciertos }),
-          });
-        }
-      }
-
-      // Guardamos en memoria el estado temporal del usuario para el posterior cálculo de posiciones
-      updatedUsersList.push({
-        id: u.id,
-        username: u.username,
-        correctPredictions: currentAciertos,
-        totalPoints: currentAciertos * MULTIPLICATIVE_POINTS,
-      });
-    }
-
-    // Ordenar la lista completa según los nuevos puntajes acumulados
-    // Mayor cantidad de predicciones correctas va primero en la tabla
-    const tempSorted = [...updatedUsersList].sort(
-      (a, b) => b.correctPredictions - a.correctPredictions,
-    );
-
-    // Asignar posiciones relativas consecutivas y fijarlas en la base de datos
-    for (let index = 0; index < tempSorted.length; index++) {
-      const assignedPosition = index + 1;
-      const targetUser = tempSorted[index];
-
-      // Modificar nueva posicion real de los usuarios
-      await fetch(`/api/users/${targetUser.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ rankingPosition: assignedPosition }),
-      });
-    }
-
-    await localforage.removeItem("ranking_data");
-    await localforage.removeItem("ranking_cache_time");
-
-    for (const u of tempSorted) {
-      await localforage.removeItem(`user_data_${u.id}`);
-      await localforage.removeItem(`user_cache_time_${u.id}`);
-    }
-  } catch (error) {
-    console.error(
-      "Error crítico en la orquestación de cómputos en el cliente:",
-      error,
-    );
-    throw error;
+  if (!response.ok) {
+    const json = await response.json().catch(() => ({}));
+    throw new Error(json.error || "Error al computar el ranking");
   }
+
+  // Limpiar caché local
+  const keys = await localforage.keys();
+  await Promise.all(keys.map((key) => localforage.removeItem(key)));
 };

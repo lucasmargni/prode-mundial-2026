@@ -32,6 +32,7 @@ export const createUser = async (username: string, password: string) => {
     select: {
       id: true,
       username: true,
+      role: true,
       correctPredictions: true,
       rankingPosition: true,
       createdAt: true,
@@ -46,6 +47,7 @@ export const getAllUsers = async () => {
     select: {
       id: true,
       username: true,
+      role: true,
       correctPredictions: true,
       rankingPosition: true,
       createdAt: true,
@@ -60,6 +62,7 @@ export const getUserById = async (id: string) => {
     select: {
       id: true,
       username: true,
+      role: true,
       correctPredictions: true,
       rankingPosition: true,
       createdAt: true,

@@ -59,7 +59,7 @@ const ProdeDetails = () => {
 
     setPredictions((prev) => ({
       ...prev,
-      [matchId]: prev[matchId] === choice ? prev[matchId] : choice,
+      [matchId]: choice,
     }));
   };
 
@@ -114,19 +114,19 @@ const ProdeDetails = () => {
   }
 
   return (
-  <div className="max-w-4xl mx-auto px-4 py-12 font-mono select-none w-full">
-    <ProdeHeader user={playerData.user} position={playerData.position} />
+    <div className="max-w-4xl mx-auto px-4 py-12 font-mono select-none w-full">
+      <ProdeHeader user={playerData.user} position={playerData.position} />
 
-    <ProdeStages
-      matches={matches}
-      predictions={predictions}
-      onPredict={handlePredict}
-      isOwnProde={isOwnProde}
-      isSaving={isSaving}
-      saveMessage={saveMessage}
-      onSave={handleSaveClick}
-    />
-  </div>
+      <ProdeStages
+        matches={matches}
+        predictions={predictions}
+        onPredict={handlePredict}
+        isOwnProde={isOwnProde}
+        isSaving={isSaving}
+        saveMessage={saveMessage}
+        onSave={handleSaveClick}
+      />
+    </div>
   );
 };
 
