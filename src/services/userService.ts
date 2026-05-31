@@ -1,5 +1,5 @@
 import localforage from "localforage";
-import type { RankingUser, Match, UserPrediction } from "../types/types";
+import type { RankingUser, Match } from "../types/types";
 
 const CACHE_DURATION_MS = 3 * 60 * 1000;
 const MULTIPLICATIVE_POINTS = 3;
@@ -118,6 +118,8 @@ export const getUserDetails = async (
     return result;
   } catch (error) {
     console.error("Error en getUserDetails:", error);
+    await localforage.removeItem("ranking_data");
+    await localforage.removeItem("ranking_cache_time");
     const backupData = await localforage.getItem<{
       user: RankingUser;
       position: number;
