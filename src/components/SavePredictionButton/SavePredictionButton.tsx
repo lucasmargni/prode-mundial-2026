@@ -1,17 +1,22 @@
-/* src/components/SavePredictionButton/SavePredictionButton.tsx */
 interface SavePredictionButtonProps {
   isSaving: boolean;
   saveMessage: { text: string; isError: boolean } | null;
   onSave: () => void;
+  position?: "top" | "bottom";
 }
 
 export const SavePredictionButton = ({
   isSaving,
   saveMessage,
   onSave,
+  position = "bottom",
 }: SavePredictionButtonProps) => {
   return (
-    <div className="w-full flex flex-col items-center space-y-4 border-b-4 border-dashed border-border-retro/40 pb-8 mb-8">
+    <div
+      className={`w-full flex flex-col items-center space-y-4 border-dashed border-border-retro/40 ${
+        position === "bottom" ? "border-b-4 pb-8 mb-8" : "border-t-4 pt-8 mt-8"
+      }`}
+    >
       <button
         onClick={onSave}
         disabled={isSaving}

@@ -58,11 +58,12 @@ export const ProdeStages = ({
         ))}
       </nav>
 
-      {isOwnProde && (
+      {isOwnProde && filteredMatches.length > 0 && (
         <SavePredictionButton
           isSaving={isSaving}
           saveMessage={saveMessage}
           onSave={onSave}
+          position="bottom"
         />
       )}
 
@@ -85,6 +86,15 @@ export const ProdeStages = ({
           ))
         )}
       </section>
+
+      {isOwnProde && filteredMatches.length > 10 && (
+        <SavePredictionButton
+          isSaving={isSaving}
+          saveMessage={saveMessage}
+          onSave={onSave}
+          position="top"
+        />
+      )}
     </>
   );
 };
