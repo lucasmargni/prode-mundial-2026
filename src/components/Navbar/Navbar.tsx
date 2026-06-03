@@ -12,6 +12,7 @@ const Navbar = () => {
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isManageOpen, setIsManageOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const isLoggedIn = !!user;
   const isAdmin = isLoggedIn && user.role === "ADMIN";
@@ -28,35 +29,39 @@ const Navbar = () => {
               </span>
             </Link>
 
-            <div className="flex items-center space-x-6">
-              {/* Opciones Admin uniformes con "Mi Prode" */}
-              {isAdmin && (
-                <>
-                  <button
-                    onClick={() => setIsCreateOpen(true)}
-                    className="text-sm font-medium text-secondary transition-colors hover:text-primary cursor-pointer bg-transparent border-none"
-                  >
-                    Agregar Partido
-                  </button>
-                  <button
-                    onClick={() => setIsManageOpen(true)}
-                    className="text-sm font-medium text-secondary transition-colors hover:text-primary cursor-pointer bg-transparent border-none"
-                  >
-                    Cargar Resultados
-                  </button>
-                </>
-              )}
+            {/* Lado derecho */}
+            <div className="flex items-center gap-4">
+              {/* Opciones desktop */}
+              <div className="hidden md:flex items-center space-x-6">
+                {isAdmin && (
+                  <>
+                    <button
+                      onClick={() => setIsCreateOpen(true)}
+                      className="text-sm font-medium text-secondary transition-colors hover:text-primary cursor-pointer bg-transparent border-none"
+                    >
+                      Agregar Partido
+                    </button>
 
-              {/* Mi Prode */}
-              {isLoggedIn && (
-                <Link
-                  to={`/prode/${user.id}`}
-                  className="text-sm font-medium text-secondary transition-colors hover:text-primary"
-                >
-                  Mi Prode
-                </Link>
-              )}
+                    <button
+                      onClick={() => setIsManageOpen(true)}
+                      className="text-sm font-medium text-secondary transition-colors hover:text-primary cursor-pointer bg-transparent border-none"
+                    >
+                      Cargar Resultados
+                    </button>
+                  </>
+                )}
 
+                {isLoggedIn && (
+                  <Link
+                    to={`/prode/${user.id}`}
+                    className="text-sm font-medium text-secondary transition-colors hover:text-primary"
+                  >
+                    Mi Prode
+                  </Link>
+                )}
+              </div>
+
+              {/* Usuario */}
               {isLoggedIn ? (
                 <UserMenu />
               ) : (
@@ -65,7 +70,7 @@ const Navbar = () => {
                 </button>
               )}
 
-              {/* Modo claro/oscuro */}
+              {/* Tema */}
               <button
                 onClick={toggleTheme}
                 className="p-2 rounded-lg border transition-all active:scale-95 border-secondary/20 bg-bg-main hover:bg-secondary/10 cursor-pointer"
@@ -77,14 +82,66 @@ const Navbar = () => {
               >
                 {theme === "light" ? "☀️" : "🌙"}
               </button>
+
+              {/* Hamburguesa solo móvil */}
+              {(isAdmin || isLoggedIn) && (
+                <button
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  className="md:hidden p-2 rounded-lg border transition-all active:scale-95 border-secondary/20 bg-bg-main hover:bg-secondary/10 cursor-pointer"
+                >
+                  ☰
+                </button>
+              )}
             </div>
           </div>
         </div>
+
+        {/* Menú móvil */}
+        {isMenuOpen && (
+          <div className="md:hidden border-t border-secondary/20 bg-bg-card">
+            <div className="flex flex-col p-4 gap-4">
+              {isAdmin && (
+                <>
+                  <button
+                    onClick={() => {
+                      setIsCreateOpen(true);
+                      setIsMenuOpen(false);
+                    }}
+                    className="text-left text-sm font-medium text-secondary hover:text-primary"
+                  >
+                    Agregar Partido
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setIsManageOpen(true);
+                      setIsMenuOpen(false);
+                    }}
+                    className="text-left text-sm font-medium text-secondary hover:text-primary"
+                  >
+                    Cargar Resultados
+                  </button>
+                </>
+              )}
+
+              {isLoggedIn && (
+                <Link
+                  to={`/prode/${user.id}`}
+                  onClick={() => setIsMenuOpen(false)}
+                  className="text-sm font-medium text-secondary hover:text-primary"
+                >
+                  Mi Prode
+                </Link>
+              )}
+            </div>
+          </div>
+        )}
       </nav>
 
       {isCreateOpen && (
         <CreateMatchModal onClose={() => setIsCreateOpen(false)} />
       )}
+
       {isManageOpen && (
         <ManageMatchModal onClose={() => setIsManageOpen(false)} />
       )}
