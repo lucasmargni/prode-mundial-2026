@@ -2,8 +2,11 @@ import { useState } from "react";
 import ModalWrapper from "../ModalWrapper/ModalWrapper";
 import { submitMatchResult, getAllMatches } from "../../services/matchService";
 import { computeScoresAndPositionsAfterMatch } from "../../services/userService";
-import { teamDictionary } from "../../utils/teams";
 import type { Match } from "../../types/types";
+import MatchSearchInput from "../MatchSearchInput/MatchSearchInput";
+import MatchHeader from "../MatchHeader/MatchHeader";
+import GoalsGrid from "../GoalsGrid/GoalsGrid";
+import PenaltiesSection from "../PenaltiesSection/PenaltiesSection";
 
 const ManageMatchModal = ({ onClose }: { onClose: () => void }) => {
   const [matchId, setMatchId] = useState("");
@@ -110,14 +113,12 @@ const ManageMatchModal = ({ onClose }: { onClose: () => void }) => {
   return (
     <ModalWrapper title="Cargar Resultado Real" onClose={onClose}>
       <div className="space-y-4">
-        {/* Renderizado de errores e impactos en el formulario */}
         {error && (
           <div className="p-3 bg-red-500/10 border border-red-500/30 text-red-500 text-sm rounded-xl font-medium">
             {error}
           </div>
         )}
 
-        {/* Estado intermedio de la orquestación cliente */}
         {loading && statusMessage && (
           <div className="p-3 bg-secondary/10 border border-secondary/30 text-secondary text-sm rounded-xl font-medium animate-pulse">
             {statusMessage}
@@ -131,134 +132,33 @@ const ManageMatchModal = ({ onClose }: { onClose: () => void }) => {
         )}
 
         {!matchData ? (
-          <div className="space-y-3">
-            <label className="block text-xs font-bold uppercase text-secondary">
-              Ingresá el ID del Partido
-            </label>
-            <div className="flex space-x-2">
-              <input
-                className="flex-1 p-2 rounded-xl border border-secondary/20 bg-bg-main text-border-retro outline-none focus:border-primary transition-colors"
-                value={matchId}
-                onChange={(e) => setMatchId(e.target.value)}
-                placeholder="ej: match-01..."
-              />
-              <button
-                disabled={loading}
-                onClick={handleSearch}
-                className="px-5 bg-secondary text-white font-semibold rounded-xl hover:opacity-90 transition-opacity cursor-pointer"
-              >
-                Buscar
-              </button>
-            </div>
-          </div>
+          <MatchSearchInput
+            matchId={matchId}
+            onChange={setMatchId}
+            onSearch={handleSearch}
+            loading={loading}
+          />
         ) : (
           <form onSubmit={handleSave} className="space-y-6">
-            <div className="flex items-center justify-between text-center bg-bg-main border border-secondary/10 p-4 rounded-xl">
-              <div className="flex-1">
-                <span
-                  className="text-3xl block mb-1"
-                  role="img"
-                  aria-label={matchData.localTeam.name}
-                >
-                  {teamDictionary[matchData.localTeam.code]?.flagUrl || "🏳️"}
-                </span>
-                <p className="text-xs font-bold uppercase tracking-wider text-border-retro">
-                  {matchData.localTeam.name}
-                </p>
-              </div>
-              <div className="px-4 font-black text-xl text-primary tracking-widest">
-                VS
-              </div>
-              <div className="flex-1">
-                <span
-                  className="text-3xl block mb-1"
-                  role="img"
-                  aria-label={matchData.awayTeam.name}
-                >
-                  {teamDictionary[matchData.awayTeam.code]?.flagUrl || "🏳️"}
-                </span>
-                <p className="text-xs font-bold uppercase tracking-wider text-border-retro">
-                  {matchData.awayTeam.name}
-                </p>
-              </div>
-            </div>
+            <MatchHeader
+              localTeam={matchData.localTeam}
+              awayTeam={matchData.awayTeam}
+            />
 
-            <div className="grid grid-cols-2 gap-8 justify-items-center">
-              <div className="text-center">
-                <label className="block text-xs font-bold text-secondary mb-2">
-                  GOLES LOCAL
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  required
-                  className="w-20 h-14 text-center text-2xl font-black rounded-xl border border-secondary/20 bg-bg-main text-border-retro outline-none focus:border-primary transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                  value={goals.local}
-                  onChange={(e) =>
-                    setGoals({ ...goals, local: e.target.value })
-                  }
-                />
-              </div>
-              <div className="text-center">
-                <label className="block text-xs font-bold text-secondary mb-2">
-                  GOLES VISITANTE
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  required
-                  className="w-20 h-14 text-center text-2xl font-black rounded-xl border border-secondary/20 bg-bg-main text-border-retro outline-none focus:border-primary transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                  value={goals.away}
-                  onChange={(e) => setGoals({ ...goals, away: e.target.value })}
-                />
-              </div>
-            </div>
+            <GoalsGrid
+              localLabel="GOLES LOCAL"
+              awayLabel="GOLES VISITANTE"
+              localValue={goals.local}
+              awayValue={goals.away}
+              onLocalChange={(v) => setGoals({ ...goals, local: v })}
+              onAwayChange={(v) => setGoals({ ...goals, away: v })}
+            />
 
             {needsPenalties && (
-              <div className="space-y-3">
-                <p className="text-center text-xs font-bold uppercase text-secondary">
-                  Empate en fase eliminatoria — Cargar definición por penales
-                </p>
-                <div className="grid grid-cols-2 gap-8 justify-items-center">
-                  <div className="text-center">
-                    <label className="block text-xs font-bold text-secondary mb-2">
-                      PENALES LOCAL
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      required
-                      className="w-20 h-14 text-center text-2xl font-black rounded-xl border border-secondary/20 bg-bg-main text-border-retro outline-none focus:border-primary transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      value={penalties.local}
-                      onChange={(e) =>
-                        setPenalties({ ...penalties, local: e.target.value })
-                      }
-                    />
-                  </div>
-                  <div className="text-center">
-                    <label className="block text-xs font-bold text-secondary mb-2">
-                      PENALES VISITANTE
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      required
-                      className="w-20 h-14 text-center text-2xl font-black rounded-xl border border-secondary/20 bg-bg-main text-border-retro outline-none focus:border-primary transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      value={penalties.away}
-                      onChange={(e) =>
-                        setPenalties({ ...penalties, away: e.target.value })
-                      }
-                    />
-                  </div>
-                </div>
-                {penalties.local !== "" &&
-                  penalties.away !== "" &&
-                  parseInt(penalties.local) === parseInt(penalties.away) && (
-                    <p className="text-center text-xs font-bold text-red-500">
-                      Los penales no pueden terminar en empate.
-                    </p>
-                  )}
-              </div>
+              <PenaltiesSection
+                penalties={penalties}
+                onChange={setPenalties}
+              />
             )}
 
             <button
