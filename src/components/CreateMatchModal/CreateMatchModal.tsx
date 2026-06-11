@@ -2,16 +2,10 @@ import { useState } from "react";
 import ModalWrapper from "../ModalWrapper/ModalWrapper";
 import { createNewMatch } from "../../services/matchService";
 import type { TournamentStage } from "../../types/types";
-
-const STAGES: TournamentStage[] = [
-  "GRUPOS",
-  "16VOS",
-  "8VOS",
-  "CUARTOS",
-  "SEMIFINAL",
-  "TERCER_PUESTO",
-  "FINAL",
-];
+import MatchIdInput from "../MatchIdInput/MatchIdInput";
+import TeamCodesInput from "../TeamCodesInput/TeamCodesInput";
+import StageSelect from "../StageSelect/StageSelect";
+import MatchDateInput from "../MatchDateInput/MatchDateInput";
 
 const CreateMatchModal = ({ onClose }: { onClose: () => void }) => {
   const [loading, setLoading] = useState(false);
@@ -33,7 +27,7 @@ const CreateMatchModal = ({ onClose }: { onClose: () => void }) => {
     try {
       await createNewMatch(formData);
       setSuccess(true);
-      setTimeout(() => onClose(), 1500); // Se cierra solo tras mostrar el éxito
+      setTimeout(() => onClose(), 1500);
     } catch (err: any) {
       setError(err.message || "Ocurrió un error inesperado al guardar.");
     } finally {
@@ -44,7 +38,6 @@ const CreateMatchModal = ({ onClose }: { onClose: () => void }) => {
   return (
     <ModalWrapper title="Agregar Nuevo Partido" onClose={onClose}>
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Notificaciones In-Form */}
         {error && (
           <div className="p-3 bg-red-500/10 border border-red-500/30 text-red-500 text-sm rounded-xl font-medium">
             {error}
@@ -56,89 +49,27 @@ const CreateMatchModal = ({ onClose }: { onClose: () => void }) => {
           </div>
         )}
 
-        <div>
-          <label className="block text-xs font-bold uppercase text-secondary mb-1">
-            ID Único (ej: match-01)
-          </label>
-          <input
-            required
-            className="w-full p-2 rounded-xl border border-secondary/20 bg-bg-main text-border-retro outline-none focus:border-primary transition-colors"
-            value={formData.id}
-            onChange={(e) => setFormData({ ...formData, id: e.target.value })}
-          />
-        </div>
+        <MatchIdInput
+          value={formData.id}
+          onChange={(v) => setFormData({ ...formData, id: v })}
+        />
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-bold uppercase text-secondary mb-1">
-              Local (Código)
-            </label>
-            <input
-              required
-              placeholder="ARG"
-              className="w-full p-2 rounded-xl border border-secondary/20 bg-bg-main text-border-retro outline-none focus:border-primary transition-colors"
-              value={formData.localTeamCode}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  localTeamCode: e.target.value.toUpperCase(),
-                })
-              }
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-bold uppercase text-secondary mb-1">
-              Visitante (Código)
-            </label>
-            <input
-              required
-              placeholder="BRA"
-              className="w-full p-2 rounded-xl border border-secondary/20 bg-bg-main text-border-retro outline-none focus:border-primary transition-colors"
-              value={formData.awayTeamCode}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  awayTeamCode: e.target.value.toUpperCase(),
-                })
-              }
-            />
-          </div>
-        </div>
+        <TeamCodesInput
+          localTeamCode={formData.localTeamCode}
+          awayTeamCode={formData.awayTeamCode}
+          onLocalChange={(v) => setFormData({ ...formData, localTeamCode: v })}
+          onAwayChange={(v) => setFormData({ ...formData, awayTeamCode: v })}
+        />
 
-        <div>
-          <label className="block text-xs font-bold uppercase text-secondary mb-1">
-            Etapa
-          </label>
-          <select
-            className="w-full p-2 rounded-xl border border-secondary/20 bg-bg-main text-border-retro outline-none focus:border-primary transition-colors cursor-pointer"
-            value={formData.stage}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                stage: e.target.value as TournamentStage,
-              })
-            }
-          >
-            {STAGES.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
-        </div>
+        <StageSelect
+          value={formData.stage}
+          onChange={(v) => setFormData({ ...formData, stage: v })}
+        />
 
-        <div>
-          <label className="block text-xs font-bold uppercase text-secondary mb-1">
-            Fecha y Hora (UTC)
-          </label>
-          <input
-            required
-            type="datetime-local"
-            className="w-full p-2 rounded-xl border border-secondary/20 bg-bg-main text-border-retro outline-none focus:border-primary transition-colors"
-            value={formData.date}
-            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-          />
-        </div>
+        <MatchDateInput
+          value={formData.date}
+          onChange={(v) => setFormData({ ...formData, date: v })}
+        />
 
         <button
           disabled={loading || success}
