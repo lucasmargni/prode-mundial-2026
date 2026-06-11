@@ -5,6 +5,8 @@ interface PredictionButtonProps {
   label: string;
   isSelected: boolean;
   isLocked: boolean;
+  isFinished?: boolean;
+  isCorrect?: boolean;
   onClick: () => void;
 }
 
@@ -12,6 +14,8 @@ export const PredictionButton = ({
   label,
   isSelected,
   isLocked,
+  isFinished,
+  isCorrect,
   onClick,
 }: PredictionButtonProps) => {
   const interactiveClasses = isLocked
@@ -19,6 +23,12 @@ export const PredictionButton = ({
     : "cursor-pointer active:translate-x-[2px] active:translate-y-[2px] active:shadow-[1px_1px_0px_0px_var(--color-border-retro)]";
 
   const getVisualStyles = () => {
+    if (isSelected && isFinished) {
+      return isCorrect
+        ? "bg-[#b9e0a5] text-slate-900 border-border-retro shadow-[inset_3px_3px_0px_rgba(0,0,0,0.25)] translate-x-[1px] translate-y-[1px]"
+        : "bg-[#f0a8a8] text-slate-900 border-border-retro shadow-[inset_3px_3px_0px_rgba(0,0,0,0.25)] translate-x-[1px] translate-y-[1px]";
+    }
+
     if (isSelected) {
       return "bg-[#f3db6b] text-slate-900 border-border-retro shadow-[inset_3px_3px_0px_rgba(0,0,0,0.25)] translate-x-[1px] translate-y-[1px]";
     }

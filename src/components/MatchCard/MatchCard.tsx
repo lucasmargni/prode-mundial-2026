@@ -23,6 +23,22 @@ export const MatchCard = ({
 
   const disableButtons = match.isFinished || isLocked;
 
+  const getRealResult = (): PredictionChoice | null => {
+    if (
+      match.realGoalsLocal === null ||
+      match.realGoalsLocal === undefined ||
+      match.realGoalsAway === null ||
+      match.realGoalsAway === undefined
+    ) {
+      return null;
+    }
+    if (match.realGoalsLocal > match.realGoalsAway) return "L";
+    if (match.realGoalsLocal < match.realGoalsAway) return "V";
+    return "E";
+  };
+
+  const realResult = match.isFinished ? getRealResult() : null;
+
   return (
     <div className="border-4 border-border-retro bg-bg-card p-4 shadow-[4px_4px_0px_0px_var(--color-border-retro)] flex flex-col md:flex-row items-center justify-between gap-6 relative bg-[linear-gradient(to_right,rgba(0,0,0,0.01)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.01)_1px,transparent_1px)] bg-[size:16px_16px]">
       <div className="absolute top-2 left-4 text-[10px] font-black text-secondary/70 uppercase tracking-tighter">
@@ -56,6 +72,12 @@ export const MatchCard = ({
             label={option.label}
             isSelected={userChoice === option.choice}
             isLocked={disableButtons}
+            isFinished={match.isFinished}
+            isCorrect={
+              realResult !== null &&
+              userChoice === realResult &&
+              option.choice === realResult
+            }
             onClick={() => onPredict(match.id, option.choice)}
           />
         ))}
