@@ -26,15 +26,17 @@ model User {
 }
 
 model Match {
-  id             String       @id @default(uuid())
-  stage          String
-  localTeamCode  String
-  awayTeamCode   String
-  date           DateTime
-  isFinished     Boolean      @default(false)
-  realGoalsLocal Int?
-  realGoalsAway  Int?
-  realResult     String?
+  id                String       @id @default(uuid())
+  stage             String
+  localTeamCode     String
+  awayTeamCode      String
+  date              DateTime
+  isFinished        Boolean      @default(false)
+  realGoalsLocal    Int?
+  realGoalsAway     Int?
+  penaltyGoalsLocal Int?
+  penaltyGoalsAway  Int?
+  realResult        String?
 
   // un partido puede estar en muchas predicciones de distintos usuarios
   predictions    Prediction[]

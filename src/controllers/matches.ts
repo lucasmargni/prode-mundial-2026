@@ -44,18 +44,35 @@ export const createMatch = async (data: {
 /* Actualizar el resultado y goles de un partido */
 export const updateMatchResult = async (
   id: string,
-  data: { realGoalsLocal: number; realGoalsAway: number },
+  data: {
+    realGoalsLocal: number;
+    realGoalsAway: number;
+    penaltyGoalsLocal?: number;
+    penaltyGoalsAway?: number;
+  },
 ) => {
   // Calculamos quien gana o si hubo empate
   let calculatedResult = "E";
   if (data.realGoalsLocal > data.realGoalsAway) calculatedResult = "L";
   if (data.realGoalsLocal < data.realGoalsAway) calculatedResult = "V";
 
+  // Si hubo empate y vinieron penales, el resultado lo define la tanda
+  if (
+    calculatedResult === "E" &&
+    typeof data.penaltyGoalsLocal === "number" &&
+    typeof data.penaltyGoalsAway === "number"
+  ) {
+    if (data.penaltyGoalsLocal > data.penaltyGoalsAway) calculatedResult = "L";
+    if (data.penaltyGoalsLocal < data.penaltyGoalsAway) calculatedResult = "V";
+  }
+
   const updatedMatch = await prisma.match.update({
     where: { id },
     data: {
       realGoalsLocal: data.realGoalsLocal,
       realGoalsAway: data.realGoalsAway,
+      penaltyGoalsLocal: data.penaltyGoalsLocal ?? null,
+      penaltyGoalsAway: data.penaltyGoalsAway ?? null,
       realResult: calculatedResult,
       isFinished: true,
     },

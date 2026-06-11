@@ -28,6 +28,8 @@ export interface Match {
   isFinished: boolean;
   realGoalsLocal?: number;
   realGoalsAway?: number;
+  penaltyGoalsLocal?: number;
+  penaltyGoalsAway?: number;
   realResult?: PredictionChoice;
 }
 

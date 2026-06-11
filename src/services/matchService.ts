@@ -40,6 +40,8 @@ const mapDBMatches = (matchesFromDB: any[]): Match[] => {
     isFinished: m.isFinished,
     realGoalsLocal: m.realGoalsLocal ?? undefined,
     realGoalsAway: m.realGoalsAway ?? undefined,
+    penaltyGoalsLocal: m.penaltyGoalsLocal ?? undefined,
+    penaltyGoalsAway: m.penaltyGoalsAway ?? undefined,
     realResult: m.realResult ?? undefined,
   }));
 };
@@ -132,6 +134,8 @@ export const submitMatchResult = async (
   goalsLocal: number,
   goalsAway: number,
   stage?: TournamentStage,
+  penaltyGoalsLocal?: number,
+  penaltyGoalsAway?: number,
 ): Promise<Match> => {
   try {
     const response = await fetch(`/api/matches/${matchId}`, {
@@ -142,6 +146,9 @@ export const submitMatchResult = async (
       body: JSON.stringify({
         realGoalsLocal: goalsLocal,
         realGoalsAway: goalsAway,
+        ...(penaltyGoalsLocal !== undefined && penaltyGoalsAway !== undefined
+          ? { penaltyGoalsLocal, penaltyGoalsAway }
+          : {}),
       }),
     });
 

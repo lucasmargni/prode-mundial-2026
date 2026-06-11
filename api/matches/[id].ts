@@ -130,7 +130,12 @@ export default async function handler(
         });
       }
 
-      const { realGoalsLocal, realGoalsAway } = JSON.parse(body);
+      const {
+        realGoalsLocal,
+        realGoalsAway,
+        penaltyGoalsLocal,
+        penaltyGoalsAway,
+      } = JSON.parse(body);
 
       if (
         typeof realGoalsLocal !== "number" ||
@@ -143,9 +148,33 @@ export default async function handler(
         });
       }
 
+      if (
+        (penaltyGoalsLocal !== undefined &&
+          typeof penaltyGoalsLocal !== "number") ||
+        (penaltyGoalsAway !== undefined && typeof penaltyGoalsAway !== "number")
+      ) {
+        return sendResponse(400, {
+          status: "error",
+          error: "Los goles de penal deben ser numéricos",
+        });
+      }
+
+      if (
+        typeof penaltyGoalsLocal === "number" &&
+        typeof penaltyGoalsAway === "number" &&
+        penaltyGoalsLocal === penaltyGoalsAway
+      ) {
+        return sendResponse(400, {
+          status: "error",
+          error: "Los penales no pueden terminar en empate",
+        });
+      }
+
       const updatedMatch = await updateMatchResult(id, {
         realGoalsLocal,
         realGoalsAway,
+        penaltyGoalsLocal,
+        penaltyGoalsAway,
       });
 
       return sendResponse(200, { status: "success", data: updatedMatch });

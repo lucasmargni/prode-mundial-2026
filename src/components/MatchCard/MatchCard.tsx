@@ -17,27 +17,15 @@ export const MatchCard = ({
 }: MatchCardProps) => {
   const buttonOptions = [
     { choice: "L" as PredictionChoice, label: match.localTeam.code },
-    { choice: "E" as PredictionChoice, label: "EMPATE" },
+    ...(match.stage === "GRUPOS"
+      ? [{ choice: "E" as PredictionChoice, label: "EMPATE" }]
+      : []),
     { choice: "V" as PredictionChoice, label: match.awayTeam.code },
   ];
 
   const disableButtons = match.isFinished || isLocked;
 
-  const getRealResult = (): PredictionChoice | null => {
-    if (
-      match.realGoalsLocal === null ||
-      match.realGoalsLocal === undefined ||
-      match.realGoalsAway === null ||
-      match.realGoalsAway === undefined
-    ) {
-      return null;
-    }
-    if (match.realGoalsLocal > match.realGoalsAway) return "L";
-    if (match.realGoalsLocal < match.realGoalsAway) return "V";
-    return "E";
-  };
-
-  const realResult = match.isFinished ? getRealResult() : null;
+  const realResult = match.isFinished ? (match.realResult ?? null) : null;
 
   return (
     <div className="border-4 border-border-retro bg-bg-card p-4 shadow-[4px_4px_0px_0px_var(--color-border-retro)] flex flex-col md:flex-row items-center justify-between gap-6 relative bg-[linear-gradient(to_right,rgba(0,0,0,0.01)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.01)_1px,transparent_1px)] bg-[size:16px_16px]">
@@ -52,9 +40,17 @@ export const MatchCard = ({
         <div className="flex items-center justify-center px-2 shrink-0">
           <div className="border-2 border-border-retro bg-bg-main px-3 py-1 font-black text-sm tracking-tight min-w-[75px] text-center shadow-[inset_2px_2px_0px_rgba(0,0,0,0.1)]">
             {match.isFinished ? (
-              <span className="text-primary">
-                {match.realGoalsLocal} - {match.realGoalsAway}
-              </span>
+              <div className="flex flex-col items-center leading-tight">
+                <span className="text-primary">
+                  {match.realGoalsLocal} - {match.realGoalsAway}
+                </span>
+                {match.penaltyGoalsLocal !== undefined &&
+                  match.penaltyGoalsAway !== undefined && (
+                    <span className="text-[10px] text-secondary/70 font-bold">
+                      PEN {match.penaltyGoalsLocal} - {match.penaltyGoalsAway}
+                    </span>
+                  )}
+              </div>
             ) : (
               <span className="text-secondary/60">VS</span>
             )}

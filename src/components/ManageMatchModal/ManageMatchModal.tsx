@@ -9,10 +9,21 @@ const ManageMatchModal = ({ onClose }: { onClose: () => void }) => {
   const [matchId, setMatchId] = useState("");
   const [matchData, setMatchData] = useState<Match | null>(null);
   const [goals, setGoals] = useState({ local: "", away: "" });
+  const [penalties, setPenalties] = useState({ local: "", away: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
+
+  const localGoalsNum = parseInt(goals.local);
+  const awayGoalsNum = parseInt(goals.away);
+
+  const isDraw =
+    !isNaN(localGoalsNum) &&
+    !isNaN(awayGoalsNum) &&
+    localGoalsNum === awayGoalsNum;
+
+  const needsPenalties = !!matchData && matchData.stage !== "GRUPOS" && isDraw;
 
   const handleSearch = async () => {
     if (!matchId.trim()) return;
@@ -47,6 +58,26 @@ const ManageMatchModal = ({ onClose }: { onClose: () => void }) => {
       return;
     }
 
+    let penaltyLocal: number | undefined;
+    let penaltyAway: number | undefined;
+
+    if (needsPenalties) {
+      penaltyLocal = parseInt(penalties.local);
+      penaltyAway = parseInt(penalties.away);
+
+      if (isNaN(penaltyLocal) || isNaN(penaltyAway)) {
+        setError(
+          "Debes ingresar la cantidad de penales convertidos por cada equipo.",
+        );
+        return;
+      }
+
+      if (penaltyLocal === penaltyAway) {
+        setError("Los penales no pueden terminar en empate.");
+        return;
+      }
+    }
+
     setLoading(true);
     setError(null);
     try {
@@ -56,6 +87,8 @@ const ManageMatchModal = ({ onClose }: { onClose: () => void }) => {
         localG,
         awayG,
         matchData.stage,
+        penaltyLocal,
+        penaltyAway,
       );
 
       setStatusMessage(
@@ -180,6 +213,53 @@ const ManageMatchModal = ({ onClose }: { onClose: () => void }) => {
                 />
               </div>
             </div>
+
+            {needsPenalties && (
+              <div className="space-y-3">
+                <p className="text-center text-xs font-bold uppercase text-secondary">
+                  Empate en fase eliminatoria — Cargar definición por penales
+                </p>
+                <div className="grid grid-cols-2 gap-8 justify-items-center">
+                  <div className="text-center">
+                    <label className="block text-xs font-bold text-secondary mb-2">
+                      PENALES LOCAL
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      required
+                      className="w-20 h-14 text-center text-2xl font-black rounded-xl border border-secondary/20 bg-bg-main text-border-retro outline-none focus:border-primary transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      value={penalties.local}
+                      onChange={(e) =>
+                        setPenalties({ ...penalties, local: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div className="text-center">
+                    <label className="block text-xs font-bold text-secondary mb-2">
+                      PENALES VISITANTE
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      required
+                      className="w-20 h-14 text-center text-2xl font-black rounded-xl border border-secondary/20 bg-bg-main text-border-retro outline-none focus:border-primary transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      value={penalties.away}
+                      onChange={(e) =>
+                        setPenalties({ ...penalties, away: e.target.value })
+                      }
+                    />
+                  </div>
+                </div>
+                {penalties.local !== "" &&
+                  penalties.away !== "" &&
+                  parseInt(penalties.local) === parseInt(penalties.away) && (
+                    <p className="text-center text-xs font-bold text-red-500">
+                      Los penales no pueden terminar en empate.
+                    </p>
+                  )}
+              </div>
+            )}
 
             <button
               disabled={loading || success}
