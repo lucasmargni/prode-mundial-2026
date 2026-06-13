@@ -124,3 +124,23 @@ export const checkIsAdmin = async (userId: string): Promise<boolean> => {
 
   return user?.role === "ADMIN";
 };
+
+export const recomputeRankingPositions = async (): Promise<void> => {
+  const allUsers = await prisma.user.findMany({
+    select: { id: true, correctPredictions: true },
+    orderBy: { correctPredictions: "desc" },
+  });
+
+  const BATCH_SIZE = 10;
+  for (let i = 0; i < allUsers.length; i += BATCH_SIZE) {
+    const batch = allUsers.slice(i, i + BATCH_SIZE);
+    await prisma.$transaction(
+      batch.map((u, idx) =>
+        prisma.user.update({
+          where: { id: u.id },
+          data: { rankingPosition: i + idx + 1 },
+        }),
+      ),
+    );
+  }
+};

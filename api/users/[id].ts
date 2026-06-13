@@ -4,6 +4,7 @@ import {
   getUserById,
   updateUserData,
   deleteUser,
+  recomputeRankingPositions,
 } from "../../src/controllers/users.js";
 
 export default async function handler(
@@ -98,8 +99,9 @@ export default async function handler(
       });
     }
 
-    if(method === "DELETE") {
+    if (method === "DELETE") {
       await deleteUser(userId);
+      await recomputeRankingPositions();
       return sendResponse(200, { status: "success", data: [] });
     }
 

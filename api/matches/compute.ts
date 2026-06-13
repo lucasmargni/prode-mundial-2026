@@ -1,7 +1,7 @@
 import type { IncomingMessage, ServerResponse } from "http";
 import jwt from "jsonwebtoken";
 import { prisma } from "../../src/lib/prisma.js";
-import { checkIsAdmin } from "../../src/controllers/users.js";
+import { checkIsAdmin, recomputeRankingPositions } from "../../src/controllers/users.js";
 
 const JWT_SECRET = process.env.JWT_SECRET || "clave_secreta_super_segura_prode";
 
@@ -80,25 +80,7 @@ export default async function handler(
       });
     }
 
-    // Traer todos los usuarios con sus puntajes actualizados y recalcular posiciones
-    const allUsers = await prisma.user.findMany({
-      select: { id: true, correctPredictions: true },
-      orderBy: { correctPredictions: "desc" },
-    });
-
-    // Actualizar posiciones en lotes
-    const BATCH_SIZE = 10;
-    for (let i = 0; i < allUsers.length; i += BATCH_SIZE) {
-      const batch = allUsers.slice(i, i + BATCH_SIZE);
-      await prisma.$transaction(
-        batch.map((u, idx) =>
-          prisma.user.update({
-            where: { id: u.id },
-            data: { rankingPosition: i + idx + 1 },
-          }),
-        ),
-      );
-    }
+    await recomputeRankingPositions();
 
     return sendResponse(200, {
       status: "success",
