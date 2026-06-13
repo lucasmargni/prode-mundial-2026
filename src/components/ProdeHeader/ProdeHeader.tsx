@@ -1,19 +1,34 @@
 import type { RankingUser } from "../../types/types";
+import DeleteUserButton from "../DeleteUserButton/DeleteUserButton";
 
 interface ProdeHeaderProps {
   user: RankingUser;
-  position: number; // Ahora es obligatorio para pintar la posición verdadera
+  position: number;
+  isAdmin?: boolean;
+  isOwnProde?: boolean;
+  onDelete?: () => Promise<void>;
 }
 
-export const ProdeHeader = ({ user, position }: ProdeHeaderProps) => {
+export const ProdeHeader = ({
+  user,
+  position,
+  isAdmin,
+  isOwnProde,
+  onDelete,
+}: ProdeHeaderProps) => {
+  const showDeleteButton = isAdmin && !isOwnProde && onDelete;
+
   return (
     <header className="border-4 border-border-retro bg-bg-card p-6 mb-8 shadow-[4px_4px_0px_0px_var(--color-border-retro)] relative overflow-hidden bg-[linear-gradient(to_right,rgba(0,0,0,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:8px_8px]">
       <div className="absolute top-0 left-0 right-0 h-1 bg-[radial-gradient(circle,transparent_20%,var(--color-bg-main)_21%)] bg-[size:8px_12px] bg-repeat-x"></div>
 
+      {showDeleteButton && (
+        <DeleteUserButton username={user.username} onDelete={onDelete} />
+      )}
+
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 pt-2">
         {/* Identificación del Jugador */}
         <div className="flex flex-col">
-          {/* Contenedor del cuadro con más separación del nombre (mb-3) */}
           <div className="flex items-center gap-2 mb-3">
             <span className="text-[10px] font-black text-[#34d399] bg-[#34d399]/10 px-2 py-0.5 border border-[#34d399]/30 tracking-wider uppercase">
               RANK #{position.toString().padStart(2, "0")}
@@ -25,7 +40,7 @@ export const ProdeHeader = ({ user, position }: ProdeHeaderProps) => {
           </h1>
         </div>
 
-        {/* Marcadores Centrados */}
+        {/* Marcadores */}
         <div className="flex gap-6 sm:gap-10 shrink-0 justify-around sm:justify-end sm:px-4">
           <div className="flex flex-col items-center text-center min-w-[70px]">
             <span className="text-[10px] font-black text-secondary uppercase tracking-wider">

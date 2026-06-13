@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import type { PredictionChoice, RankingUser, Match } from "../../types/types";
 import ProdeHeader from "../../components/ProdeHeader/ProdeHeader";
 import ProdeStages from "../../components/ProdeStages/ProdeStages";
-import { getUserDetails } from "../../services/userService";
+import { getUserDetails, deleteUser } from "../../services/userService";
 import { getAllMatches } from "../../services/matchService";
 import {
   getUserPredictions,
@@ -14,6 +14,7 @@ import { useAuth } from "../../contexts/AuthContext";
 const ProdeDetails = () => {
   const { id } = useParams<{ id: string }>();
   const { user: currentUser } = useAuth();
+  const navigate = useNavigate();
 
   const [matches, setMatches] = useState<Match[]>([]);
   const [predictions, setPredictions] = useState<
@@ -32,6 +33,7 @@ const ProdeDetails = () => {
   } | null>(null);
 
   const isOwnProde = currentUser?.id === id;
+  const isAdmin = currentUser?.role === "ADMIN";
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -86,6 +88,12 @@ const ProdeDetails = () => {
     setIsSaving(false);
   };
 
+  const handleDelete = async () => {
+    if (!id) return;
+    await deleteUser(id);
+    navigate("/");
+  };
+
   if (loading) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-16 text-center font-mono uppercase font-black text-secondary w-full">
@@ -115,7 +123,13 @@ const ProdeDetails = () => {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12 font-mono select-none w-full">
-      <ProdeHeader user={playerData.user} position={playerData.position} />
+      <ProdeHeader
+        user={playerData.user}
+        position={playerData.position}
+        isAdmin={isAdmin}
+        isOwnProde={isOwnProde}
+        onDelete={handleDelete}
+      />
 
       <ProdeStages
         matches={matches}

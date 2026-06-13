@@ -128,6 +128,29 @@ export const getUserDetails = async (
   }
 };
 
+export const deleteUser = async (userId: string): Promise<boolean> => {
+  try {
+    const response = await fetch(`/api/users/${userId}`, {
+      method: "DELETE",
+    });
+
+    if (!response.ok) throw new Error("Error al eliminar el usuario");
+
+    const keysToRemove = [
+      `user_data_${userId}`,
+      `user_cache_time_${userId}`,
+      "ranking_data",
+      "ranking_cache_time",
+    ];
+    await Promise.all(keysToRemove.map((k) => localforage.removeItem(k)));
+
+    return true;
+  } catch (error) {
+    console.error("Error en deleteUser:", error);
+    return false;
+  }
+};
+
 export const computeScoresAndPositionsAfterMatch = async (
   finishedMatch: Match,
 ): Promise<void> => {
