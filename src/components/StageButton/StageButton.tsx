@@ -3,17 +3,17 @@ import type { TournamentStage, StageStatus } from "../../types/types";
 interface StageButtonProps {
   stage: StageStatus;
   isActive: boolean;
-  todayStr: string;
+  now: Date;
   onClick: (id: TournamentStage) => void;
 }
 
 export const StageButton = ({
   stage,
   isActive,
-  todayStr,
+  now,
   onClick,
 }: StageButtonProps) => {
-  const isAvailable = todayStr < stage.lockDate;
+  const isAvailable = now < new Date(stage.lockDate);
 
   const baseStyles =
     "border-4 font-black text-xs px-4 py-2 uppercase transition-all duration-150 cursor-pointer select-none";

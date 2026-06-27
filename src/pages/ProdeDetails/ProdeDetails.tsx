@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import type { PredictionChoice, RankingUser, Match } from "../../types/types";
 import ProdeHeader from "../../components/ProdeHeader/ProdeHeader";
 import ProdeStages from "../../components/ProdeStages/ProdeStages";
+import ManageMatchModal from "../../components/ManageMatchModal/ManageMatchModal";
 import { getUserDetails, deleteUser } from "../../services/userService";
 import { getAllMatches } from "../../services/matchService";
 import {
@@ -27,6 +28,7 @@ const ProdeDetails = () => {
 
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [manageMatch, setManageMatch] = useState<Match | null>(null);
   const [saveMessage, setSaveMessage] = useState<{
     text: string;
     isError: boolean;
@@ -136,10 +138,19 @@ const ProdeDetails = () => {
         predictions={predictions}
         onPredict={handlePredict}
         isOwnProde={isOwnProde}
+        isAdmin={isAdmin}
         isSaving={isSaving}
         saveMessage={saveMessage}
         onSave={handleSaveClick}
+        onManageMatch={setManageMatch}
       />
+
+      {manageMatch && (
+        <ManageMatchModal
+          initialMatch={manageMatch}
+          onClose={() => setManageMatch(null)}
+        />
+      )}
     </div>
   );
 };

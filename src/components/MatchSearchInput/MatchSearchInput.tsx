@@ -15,7 +15,7 @@ const MatchSearchInput = ({ matchId, onChange, onSearch, loading }: MatchSearchI
         className="flex-1 p-2 rounded-xl border border-secondary/20 bg-bg-main text-border-retro outline-none focus:border-primary transition-colors"
         value={matchId}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="ej: match-01..."
+        placeholder="ej: arg-fra"
       />
       <button
         disabled={loading}

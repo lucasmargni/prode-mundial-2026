@@ -8,9 +8,9 @@ import MatchHeader from "../MatchHeader/MatchHeader";
 import GoalsGrid from "../GoalsGrid/GoalsGrid";
 import PenaltiesSection from "../PenaltiesSection/PenaltiesSection";
 
-const ManageMatchModal = ({ onClose }: { onClose: () => void }) => {
+const ManageMatchModal = ({ onClose, initialMatch }: { onClose: () => void; initialMatch?: Match }) => {
   const [matchId, setMatchId] = useState("");
-  const [matchData, setMatchData] = useState<Match | null>(null);
+  const [matchData, setMatchData] = useState<Match | null>(initialMatch ?? null);
   const [goals, setGoals] = useState({ local: "", away: "" });
   const [penalties, setPenalties] = useState({ local: "", away: "" });
   const [loading, setLoading] = useState(false);

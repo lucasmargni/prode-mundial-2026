@@ -14,9 +14,11 @@ interface ProdeStagesProps {
   predictions: Record<string, PredictionChoice>;
   onPredict: (matchId: string, choice: PredictionChoice) => void;
   isOwnProde: boolean;
+  isAdmin: boolean;
   isSaving: boolean;
   saveMessage: { text: string; isError: boolean } | null;
   onSave: () => void;
+  onManageMatch: (match: Match) => void;
 }
 
 export const ProdeStages = ({
@@ -24,20 +26,22 @@ export const ProdeStages = ({
   predictions,
   onPredict,
   isOwnProde,
+  isAdmin,
   isSaving,
   saveMessage,
   onSave,
+  onManageMatch,
 }: ProdeStagesProps) => {
-  const todayStr = new Date().toISOString().split("T")[0];
+  const now = new Date();
 
   const [activeStage, setActiveStage] = useState<TournamentStage>(() => {
-    const currentStage = STAGES_DATA.find((s) => s.lockDate >= todayStr);
+    const currentStage = STAGES_DATA.find((s) => new Date(s.lockDate) >= now);
     return currentStage ? (currentStage.id as TournamentStage) : "FINAL";
   });
 
   const currentStageData = STAGES_DATA.find((s) => s.id === activeStage);
   const isStageExpired = currentStageData
-    ? todayStr >= currentStageData.lockDate
+    ? now >= new Date(currentStageData.lockDate)
     : false;
 
   const filteredMatches = matches.filter(
@@ -52,7 +56,7 @@ export const ProdeStages = ({
             key={stage.id}
             stage={stage}
             isActive={activeStage === stage.id}
-            todayStr={todayStr}
+            now={now}
             onClick={setActiveStage}
           />
         ))}
@@ -82,6 +86,7 @@ export const ProdeStages = ({
               userChoice={predictions[match.id]}
               onPredict={onPredict}
               isLocked={isStageExpired}
+              onManageMatch={isAdmin && !match.isFinished ? () => onManageMatch(match) : undefined}
             />
           ))
         )}

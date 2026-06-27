@@ -2,7 +2,6 @@ import { useState } from "react";
 import ModalWrapper from "../ModalWrapper/ModalWrapper";
 import { createNewMatch } from "../../services/matchService";
 import type { TournamentStage } from "../../types/types";
-import MatchIdInput from "../MatchIdInput/MatchIdInput";
 import TeamCodesInput from "../TeamCodesInput/TeamCodesInput";
 import StageSelect from "../StageSelect/StageSelect";
 import MatchDateInput from "../MatchDateInput/MatchDateInput";
@@ -12,7 +11,6 @@ const CreateMatchModal = ({ onClose }: { onClose: () => void }) => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [formData, setFormData] = useState({
-    id: "",
     stage: "GRUPOS" as TournamentStage,
     localTeamCode: "",
     awayTeamCode: "",
@@ -24,8 +22,9 @@ const CreateMatchModal = ({ onClose }: { onClose: () => void }) => {
     setLoading(true);
     setError(null);
     setSuccess(false);
+    const id = `${formData.localTeamCode.toLowerCase()}-${formData.awayTeamCode.toLowerCase()}`;
     try {
-      await createNewMatch(formData);
+      await createNewMatch({ ...formData, id });
       setSuccess(true);
       setTimeout(() => onClose(), 1500);
     } catch (err: any) {
@@ -48,11 +47,6 @@ const CreateMatchModal = ({ onClose }: { onClose: () => void }) => {
             Partido creado de forma exitosa. Cerrando...
           </div>
         )}
-
-        <MatchIdInput
-          value={formData.id}
-          onChange={(v) => setFormData({ ...formData, id: v })}
-        />
 
         <TeamCodesInput
           localTeamCode={formData.localTeamCode}

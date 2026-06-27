@@ -7,6 +7,7 @@ interface MatchCardProps {
   userChoice?: PredictionChoice;
   onPredict: (matchId: string, choice: PredictionChoice) => void;
   isLocked: boolean;
+  onManageMatch?: () => void;
 }
 
 export const MatchCard = ({
@@ -14,6 +15,7 @@ export const MatchCard = ({
   userChoice,
   onPredict,
   isLocked,
+  onManageMatch,
 }: MatchCardProps) => {
   const buttonOptions = [
     { choice: "L" as PredictionChoice, label: match.localTeam.code },
@@ -38,7 +40,10 @@ export const MatchCard = ({
         <CountryMatchCard team={match.localTeam} />
 
         <div className="flex items-center justify-center px-2 shrink-0">
-          <div className="border-2 border-border-retro bg-bg-main px-3 py-1 font-black text-sm tracking-tight min-w-[75px] text-center shadow-[inset_2px_2px_0px_rgba(0,0,0,0.1)]">
+          <div
+            onClick={onManageMatch}
+            className={`border-2 border-border-retro bg-bg-main px-3 py-1 font-black text-sm tracking-tight min-w-[75px] text-center shadow-[inset_2px_2px_0px_rgba(0,0,0,0.1)] ${onManageMatch ? "cursor-pointer hover:border-primary hover:text-primary transition-colors" : ""}`}
+          >
             {match.isFinished ? (
               <div className="flex flex-col items-center leading-tight">
                 <span className="text-primary">
