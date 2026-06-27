@@ -33,6 +33,22 @@ html, body {
   &::-webkit-scrollbar {
     display: none;
   }
-  -ms-overflow-style: none;  
-  scrollbar-width: none;  
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@keyframes ball-bounce {
+  0%   { transform: translateY(0)     rotate(0deg);   animation-timing-function: ease-in; }
+  50%  { transform: translateY(-40px) rotate(180deg); animation-timing-function: ease-out; }
+  100% { transform: translateY(0)     rotate(360deg); animation-timing-function: ease-in; }
+}
+
+@keyframes ball-shadow {
+  0%, 100% { transform: scaleX(1);    opacity: 0.25; }
+  50%       { transform: scaleX(0.25); opacity: 0.06; }
+}
+
+@layer utilities {
+  .animate-ball-bounce  { animation: ball-bounce  0.65s infinite; }
+  .animate-ball-shadow  { animation: ball-shadow  0.65s infinite; }
 }

@@ -1,5 +1,6 @@
 import RankingTable from "../../components/RankingTable/RankingTable";
 import LoginModal from "../../components/LoginModal/LoginModal";
+import BallLoader from "../../components/BallLoader/BallLoader";
 import { useAuth } from "../../contexts/AuthContext";
 
 const Home = () => {
@@ -7,8 +8,8 @@ const Home = () => {
 
   if (loading) {
     return (
-      <div className="flex flex-grow items-center justify-center bg-gray-900 text-white font-mono uppercase tracking-widest">
-        <p className="text-xl font-semibold animate-pulse">Cargando prode...</p>
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <BallLoader />
       </div>
     );
   }

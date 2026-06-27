@@ -4,6 +4,7 @@ import type { PredictionChoice, RankingUser, Match } from "../../types/types";
 import ProdeHeader from "../../components/ProdeHeader/ProdeHeader";
 import ProdeStages from "../../components/ProdeStages/ProdeStages";
 import ManageMatchModal from "../../components/ManageMatchModal/ManageMatchModal";
+import BallLoader from "../../components/BallLoader/BallLoader";
 import { getUserDetails, deleteUser } from "../../services/userService";
 import { getAllMatches } from "../../services/matchService";
 import {
@@ -98,8 +99,8 @@ const ProdeDetails = () => {
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-16 text-center font-mono uppercase font-black text-secondary w-full">
-        Cargando Jugador y Fixture...
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <BallLoader label="CARGANDO JUGADOR..." />
       </div>
     );
   }

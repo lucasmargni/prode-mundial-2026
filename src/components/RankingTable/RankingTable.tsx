@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import type { RankingUser } from "../../types/types";
 import RankingItem from "../RankingItem/RankingItem";
+import BallLoader from "../BallLoader/BallLoader";
 import { getRanking } from "../../services/userService";
 import { useAuth } from "../../contexts/AuthContext";
 
@@ -49,11 +50,10 @@ const RankingTable = () => {
           <tbody className="divide-y-4 divide-border-retro font-bold text-base text-border-retro bg-[linear-gradient(to_right,rgba(0,0,0,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.03)_1px,transparent_1px)] bg-[size:16px_16px] dark:bg-[linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)]">
             {loading ? (
               <tr>
-                <td
-                  colSpan={4}
-                  className="py-8 text-center animate-pulse tracking-widest uppercase text-secondary"
-                >
-                  Cargando Ranking...
+                <td colSpan={4} className="py-4">
+                  <div className="flex justify-center">
+                    <BallLoader label="CARGANDO RANKING..." />
+                  </div>
                 </td>
               </tr>
             ) : ranking.length === 0 ? (
